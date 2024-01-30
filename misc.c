@@ -67,7 +67,7 @@ void l2tp_log (int level, const char *fmt, ...)
     }
 }
 
-void log_debug(int level, const char *fmt, ...)
+void log_debug(const char *fmt, ...)
 {
 	char buf[2048];
     va_list args;
@@ -75,7 +75,7 @@ void log_debug(int level, const char *fmt, ...)
     vsnprintf (buf, sizeof (buf), fmt, args);
     va_end (args);
 	
-	l2tp_log(level, buf);
+	l2tp_log(LOG_INFO, buf);
 }
 
 

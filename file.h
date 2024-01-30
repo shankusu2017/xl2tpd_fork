@@ -170,7 +170,7 @@ struct global
     int debug_network;		/* Print network debugging info? */
     int debug_tunnel;		/* Print tunnel debugging info? */
     int debug_state;		/* Print FSM debugging info? */
-    int ipsecsaref;
+    int ipsecsaref;			/* 默认未启用 */
     int sarefnum;		/* Value of IPSEC_REFINFO used by kernel
 				 * (we used to pick 22, but 2.6.36+ took that, so now we pick 30)
 				 * Changed in SAref patch in openswan 2.6.36 for linux 2.6.36+ */

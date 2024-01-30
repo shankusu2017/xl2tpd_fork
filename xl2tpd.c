@@ -1924,7 +1924,7 @@ static void init (int argc,char *argv[])
             inet_ntoa(listenaddr), gconfig.port);
     lac = laclist;
     while (lac)
-    {
+    {	log_debug("0x6b7dd905 create one lac\n");
         if (lac->autodial)
         {
 #ifdef DEBUG_MAGIC

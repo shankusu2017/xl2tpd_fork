@@ -34,13 +34,13 @@ char hostname[256];
 struct sockaddr_in server, from;        /* Server and transmitter structs */
 int server_socket;              /* Server socket */
 #ifdef USE_KERNEL
-int kernel_support;             /* Kernel Support there or not? */
+int kernel_support;             /* Kernel Support there or not?，分析日志得知内核是支持的 */
 #endif
 
 // 根据配置文件，在指定的 IP 地址上创建 socket，设置参数后，开启监听
 int init_network(void)
 {
-	log_debug (LOG_INFO, "init_network...\n");
+	log_debug ("init_network...\n");
 
     long arg;
     unsigned int length = sizeof (server);
@@ -60,6 +60,7 @@ int init_network(void)
     setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &flags, sizeof(flags));
 #ifdef SO_NO_CHECK
     setsockopt(server_socket, SOL_SOCKET, SO_NO_CHECK, &flags, sizeof(flags));
+	log_debug ("setsockopt SO_NO_CHECK\n");
 #endif
 
     if (bind (server_socket, (struct sockaddr *) &server, sizeof (server)))
@@ -82,7 +83,8 @@ int init_network(void)
      * For L2TP/IPsec with KLIPSng, set the socket to receive IPsec REFINFO
      * values.
      */
-    if (!gconfig.ipsecsaref)
+    /*通过分析日志，确定 ipsecsaref 未配置*/
+    if (!gconfig.ipsecsaref)	
     {
         l2tp_log (LOG_INFO, "Not looking for kernel SAref support.\n");
     }
@@ -105,6 +107,7 @@ int init_network(void)
 #endif
 
 #ifdef USE_KERNEL
+	log_debug ("USE_KERNEL MACRO DOING\n");
     if (gconfig.forceuserspace)
     {
         l2tp_log (LOG_INFO, "Not looking for kernel support.\n");
@@ -120,7 +123,7 @@ int init_network(void)
             kernel_support = 0;
         }
         else
-        {
+        {	/* 通过日子发现，下面的分支被执行 */
             close(kernel_fd);
             l2tp_log (LOG_INFO, "Using l2tp kernel support.\n");
             kernel_support = -1;
@@ -618,7 +621,9 @@ void network_thread ()
         for (cmsg = CMSG_FIRSTHDR(&msgh);
             cmsg != NULL;
             cmsg = CMSG_NXTHDR(&msgh,cmsg)) {
+            log_debug("0x12e42c41 handle a data buf，通过打印确定 for 循环未被执行 \n");
 #ifdef LINUX
+			log_debug("0x08f33f9b extract destination(our) addr\n");
             /* extract destination(our) addr */
             if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
                 struct in_pktinfo* pktInfo = ((struct in_pktinfo*)CMSG_DATA(cmsg));
@@ -636,15 +641,16 @@ void network_thread ()
             }
         }
 
+		log_debug("0x0281d979 handle l2tp header\n");
 	    /*
 	     * some logic could be added here to verify that we only
 	     * get L2TP packets inside of IPsec, or to provide different
 	     * classes of service to packets not inside of IPsec.
 	     */
 	    buf->len = recvsize;
-				/* 处理报头的字节序顺序
-				 * 读取 tunnelID,sessionID 
-				 */
+		/* 处理报头的字节序顺序
+		 * 读取 tunnelID,sessionID 
+		 */
 	    fix_hdr (buf->start);
 	    extract (buf->start, &tunnel, &call);
 

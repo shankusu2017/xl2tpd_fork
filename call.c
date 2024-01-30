@@ -698,8 +698,8 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
         /* 设置与之通信的 对端 socket 参数 */
         st->peer.sin_family = AF_INET;
         st->peer.sin_port = port;
-	st->refme  = refme;
-	st->refhim = refhim;
+		st->refme  = refme;
+		st->refhim = refhim;
         st->udp_fd = -1;
         st->pppox_fd = -1;
         bcopy(&addr, &st->peer.sin_addr, sizeof(addr));
