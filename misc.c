@@ -67,6 +67,12 @@ void l2tp_log (int level, const char *fmt, ...)
     }
 }
 
+void log_debug(int level, const char *fmt, ...)
+{
+	l2tp_log(level, fmt, ...);
+}
+
+
 /* 某个 call 发生了 error */
 void set_error(struct call *c, int error, const char *fmt, ...)
 {

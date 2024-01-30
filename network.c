@@ -40,6 +40,8 @@ int kernel_support;             /* Kernel Support there or not? */
 // 根据配置文件，在指定的 IP 地址上创建 socket，设置参数后，开启监听
 int init_network(void)
 {
+	log_debug (LOG_INFO, "init_network...\n");
+
     long arg;
     unsigned int length = sizeof (server);
     gethostname (hostname, sizeof (hostname));

@@ -62,6 +62,7 @@ struct ppp_opts
 
 extern char hostname[];
 extern void l2tp_log (int level, const char *fmt, ...);
+extern void log_debug(int level, const char *fmt, ...);
 extern struct buffer *new_buf (int);
 extern void udppush_handler (int);
 extern int addfcs (struct buffer *buf);
