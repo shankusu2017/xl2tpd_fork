@@ -61,6 +61,7 @@ void mk_challenge (unsigned char *c, int length)
 /* 插入一个 node , 哈希桶算法
  * reserve：预定
  */
+void reserve_addr (unsigned int addr)
 {
     /* Mark this address as in use */
     struct addr_ent *tmp, *tmp2;
