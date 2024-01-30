@@ -21,16 +21,16 @@ struct tunnel;
 struct buffer
 {
     int type;
-    void *rstart;
-    void *rend;
-    void *start;
-    size_t len;
-    size_t maxlen;
+    void *rstart;  // 内存块 起始地址
+    void *rend;    // 内存块 结束地址
+    void *start;   // 下一个可读地址
+    size_t len;    // 已写入长度（可读长度）,某种情况下表示可写入长度
+    size_t maxlen; // 内存块大小
 #if 0
     unsigned int addr;
     int port;
 #else
-    struct sockaddr_in peer;
+    struct sockaddr_in peer; /* 这个 buf 将发往哪里（若需发送）*/
 #endif
     struct tunnel *tunnel;      /* Who owns this packet, if it's a control */
     int retries;                /* Again, if a control packet, how many retries? */

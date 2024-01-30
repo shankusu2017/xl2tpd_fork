@@ -13,11 +13,15 @@
  *
  */
 
+/*
+ * 本模块需要阅读和理解
+ */
+
 #include "common.h"
 
 /* Declaration of FIFO used for maintaining
    a reliable control connection, as well
-   as for queueing stuff for the individual
+   as for queueing stuff for the individual(个人)
    threads */
 #ifndef _CONTROL_H
 #define _CONTROL_H
@@ -25,6 +29,7 @@
    field of AVP requests */
 
 /* Control Connection Management */
+/* 可以新增一个 define CCNULL 0 ，或许有助于理解吧 */
 #define SCCRQ 	1               /* Start-Control-Connection-Request */
 #define SCCRP 	2               /* Start-Control-Connection-Reply */
 #define SCCCN 	3               /* Start-Control-Connection-Connected */
@@ -47,10 +52,10 @@
 
 #define MAX_MSG 16
 
-#define TBIT 0x8000
-#define LBIT 0x4000
+#define TBIT 0x8000 /* 类型标志 */
+#define LBIT 0x4000 /* 长度标志 */
 #define RBIT 0x2000
-#define FBIT 0x0800
+#define FBIT 0x0800 /* 顺序位标志：若为1表示存在 Ns,Nr*/
 
 extern int handle_packet (struct buffer *, struct tunnel *, struct call *);
 extern struct buffer *new_outgoing (struct tunnel *);

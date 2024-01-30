@@ -19,7 +19,7 @@
 
 /*
  * The idea is to provide a general scheduler which can schedule
- * events to be run periodically
+ * events to be run periodically（周期性）
  */
 
 struct schedule_entry

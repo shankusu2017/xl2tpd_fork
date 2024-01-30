@@ -12,6 +12,8 @@
  * Attribute Value Pair creating routines
  */
 
+/* 对应头文件： avp.h */
+
 #include <stdlib.h>
 #include <string.h>
 #include <netinet/in.h>
@@ -47,8 +49,8 @@ void add_header(struct buffer *buf, _u16 length, _u16 type) {
 int add_message_type_avp (struct buffer *buf, _u16 type)
 {
 	struct half_words *ptr = (struct half_words *) (buf->start + buf->len + sizeof(struct avp_hdr));
-	add_header(buf, 0x8, 0);
-	ptr->s0 = htons(type);
+    add_header(buf, 0x8, 0); /* 0x8 = 0x6 + 0x2，下同*/
+    ptr->s0 = htons(type);
     buf->len += 0x8;
     return 0;
 }

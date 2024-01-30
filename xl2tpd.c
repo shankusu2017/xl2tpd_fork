@@ -222,7 +222,8 @@ static void status_handler (int sig)
     show_status ();
 }
 
-static void child_handler (int sig)
+/* 处理子进程关闭事件的句柄 */
+static void child_handler(int sig)
 {
     UNUSED(sig);
     /*
@@ -299,7 +300,8 @@ static void child_handler (int sig)
     }
 }
 
-static void death_handler (int signal)
+// 处理 进程退出的 句柄
+static void death_handler(int signal)
 {
     /*
        * If we get here, somebody terminated us with a kill or a control-c.
@@ -723,7 +725,7 @@ static struct tunnel *l2tp_call (char *host, int port, struct lac *lac,
     bcopy (hp->h_addr, &addr.s_addr, hp->h_length);
     /* Force creation of a new tunnel
        and set it's tid to 0 to cause
-       negotiation to occur */
+       negotiation（协商） to occur */
     /*
      * to do IPsec properly here, we need to set a socket policy,
      * and/or communicate with pluto.
@@ -787,7 +789,7 @@ static struct call *lac_call (int tid, struct lac *lac, struct lns *lns)
     {
         if (t->ourtid == tid)
         {
-            tmp = new_call (t);
+            tmp = new_call(t);	/* KEY: 1e48c24c */
             if (!tmp)
             {
                 l2tp_log (LOG_WARNING, "%s: unable to create new call\n",
@@ -894,14 +896,20 @@ static void lac_disconnect (int tid)
     return;
 }
 
-struct tunnel *new_tunnel ()
+/* 新建 一个 tunnel + call，且 tunnel->self = new_call
+ * 只有当 alloc 失败时，才会返回 NULL
+ */
+struct tunnel *new_tunnel()
 {
+    /* calloc 清0很重要，下面未作特别初始化的子域都默认其初始值是0 */
     struct tunnel *tmp = calloc (1, sizeof (struct tunnel));
     unsigned char entropy_buf[2] = "\0";
     if (!tmp)
         return NULL;
     tmp->debug = -1;
     tmp->tid = -1;
+
+    /* 随机产生一个隧道ID（应该做去重，去零处理） */
 #ifndef TESTING
 /*      while(get_call((tmp->ourtid = rand() & 0xFFFF),0,0,0)); */
 /*        tmp->ourtid = rand () & 0xFFFF; */
@@ -922,14 +930,14 @@ struct tunnel *new_tunnel ()
     tmp->peer.sin_family = AF_INET;
     bzero (&(tmp->peer.sin_addr), sizeof (tmp->peer.sin_addr));
 #ifdef SANITY
-    tmp->sanity = -1;
+    tmp->sanity = -1; /* 非0*/
 #endif
     tmp->qtid = -1;
     tmp->ourfc = ASYNC_FRAMING | SYNC_FRAMING;
-    tmp->ourtb = (((_u64) rand ()) << 32) | ((_u64) rand ());
-    tmp->fc = -1;               /* These really need to be specified by the peer */
-    tmp->bc = -1;               /* And we want to know if they forgot */
-    if (!(tmp->self = new_call (tmp)))
+    tmp->ourtb = (((_u64)rand()) << 32) | ((_u64)rand());
+    tmp->fc = -1; /* These really need to be specified by the peer */
+    tmp->bc = -1; /* And we want to know if they forgot */
+    if (!(tmp->self = new_call(tmp)))	/* KEY: f26c6d4d */
     {
         free (tmp);
         return NULL;
@@ -1554,7 +1562,8 @@ static int control_handle_lac_status(){
     return 1;
 }
 
-void do_control ()
+/* 外界进程和l2tp进程沟通的一种方式 */
+void do_control()
 {
     char buf[CONTROL_PIPE_MESSAGE_SIZE];
     char *bufp; /* current buffer pointer */
@@ -1659,6 +1668,7 @@ static void usage(void) {
     exit(1);
 }
 
+// 进程启动时，将命令行传入参数更新到全局配置表，但不做进一步处理
 static void init_args(int argc, char *argv[])
 {
     int i=0;
@@ -1672,7 +1682,8 @@ static void init_args(int argc, char *argv[])
     memset(gconfig.pidfile,0,STRLEN);
     memset(gconfig.controlfile,0,STRLEN);
     memset(gconfig.controltos,0,STRLEN);
-    strncpy(gconfig.altauthfile,ALT_DEFAULT_AUTH_FILE,
+    /* 先用缺省配置，若命令行有传入，则用命令行的 */
+    strncpy(gconfig.altauthfile, ALT_DEFAULT_AUTH_FILE,
             sizeof(gconfig.altauthfile) - 1);
     strncpy(gconfig.altconfigfile,ALT_DEFAULT_CONFIG_FILE,
             sizeof(gconfig.altconfigfile) - 1);
@@ -1753,7 +1764,9 @@ static void init_args(int argc, char *argv[])
         gconfig.syslog = gconfig.daemon;
 }
 
-
+/* 变成后台进程
+ * 放到 misc 就好了
+ */
 static void daemonize() {
     int pid=0;
     int i;
@@ -1764,7 +1777,7 @@ static void daemonize() {
         close(server_socket);
         exit(1);
     }
-    else if (pid)
+    else if (pid) // 父进程退出
     {
         close(server_socket);
         closelog();
@@ -1862,18 +1875,21 @@ static void init (int argc,char *argv[])
     srand( time(NULL) );
     rand_source = 0;
     init_addr ();
-    if (init_config ())
+    if (init_config())	/* KEY FUNCTION */
     {
         l2tp_log (LOG_CRIT, "%s: Unable to load config file\n", __FUNCTION__);
         exit (1);
     }
+
+    /* uts 在这里不知道其具体作用是啥 */
     if (uname (&uts)<0)
     {
         l2tp_log (LOG_CRIT, "%s : Unable to determine host system\n",
                 __FUNCTION__);
         exit (1);
     }
-    init_tunnel_list (&tunnels);
+    init_tunnel_list(&tunnels);
+    /* 在指定的网络端口上开启监听 */
     if (init_network ())
         exit (1);
 
@@ -1890,6 +1906,7 @@ static void init (int argc,char *argv[])
     signal (SIGPIPE, SIG_IGN);
     init_scheduler ();
 
+    // 创建 control file
     unlink(gconfig.controlfile);
     mkfifo (gconfig.controlfile, 0600);
 

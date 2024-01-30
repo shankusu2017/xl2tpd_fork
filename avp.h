@@ -17,9 +17,9 @@
 
 struct avp_hdr
 {
-    _u16 length;
-    _u16 vendorid;
-    _u16 attr;
+    _u16 length;   /* 包含 avp_hdr 在内的 avp 长度 */
+    _u16 vendorid; /* 供应商*/
+    _u16 attr;     /* 属性ID */
 } __attribute__((packed));
 
 struct avp
@@ -47,9 +47,10 @@ extern char *msgtypes[];
  * Macros to extract information from length field of AVP
  */
 
-#define AMBIT(len) (len & 0x8000)       /* Mandatory bit: If this is
-                                           set on an unknown AVP, 
-                                           we MUST terminate */
+/* 必须解析该 AVP 属性，如果无法解析则进程应该终止 */
+#define AMBIT(len) (len & 0x8000) /* Mandatory（强制） bit: If this is \
+                                     set on an unknown AVP,                \
+                                     we MUST terminate */
 
 #define AHBIT(len) (len & 0x4000)       /* Hidden bit: Specifies
                                            information hiding */

@@ -67,21 +67,22 @@ struct buffer *new_outgoing (struct tunnel *t)
     struct buffer *tmp = new_buf (MAX_RECV_SIZE);
     if (!tmp)
         return NULL;
-    tmp->peer = t->peer;
-    tmp->start += sizeof (struct control_hdr);
+    tmp->peer = t->peer;                      /* 重点 */
+    tmp->start += sizeof(struct control_hdr); /* 预留控制头的位置出来，后续要用到这个区域 */
     tmp->len = 0;
     tmp->retries = 0;
     tmp->tunnel = t;
     return tmp;
 }
 
-inline void recycle_outgoing (struct buffer *buf, struct sockaddr_in peer)
+/* buffer 重用 */
+inline void recycle_outgoing(struct buffer *buf, struct sockaddr_in peer)
 {
     /*
      * This should only be used for ZLB's!
      */
-    buf->start = buf->rstart + sizeof (struct control_hdr);
-    buf->peer = peer;
+    buf->start = buf->rstart + sizeof(struct control_hdr);
+    buf->peer = peer; /* 重点 */
     buf->len = 0;
     buf->retries = -1;
     buf->tunnel = NULL;
@@ -103,20 +104,21 @@ void add_fcs (struct buffer *buf)
     buf->len += 2;
 }
 
-void add_control_hdr (struct tunnel *t, struct call *c, struct buffer *buf)
+/* 增加控制头到当前buf的最前面 */
+void add_control_hdr(struct tunnel *t, struct call *c, struct buffer *buf)
 {
     struct control_hdr *h;
-    buf->start -= sizeof (struct control_hdr);
-    buf->len += sizeof (struct control_hdr);
-    h = (struct control_hdr *) buf->start;
-    h->ver = htons (TBIT | LBIT | FBIT | VER_L2TP);
-    h->length = htons ((_u16) buf->len);
-    h->tid = htons (t->tid);
-    h->cid = htons (c->cid);
-    h->Ns = htons (t->control_seq_num);
-    h->Nr = htons (t->control_rec_seq_num);
-    t->control_seq_num++;
-
+    /* 放在已写 buf 的前面 */
+    buf->start -= sizeof(struct control_hdr);
+    buf->len += sizeof(struct control_hdr);
+    h = (struct control_hdr *)buf->start;
+    h->ver = htons(TBIT | LBIT | FBIT | VER_L2TP);
+    h->length = htons((_u16)buf->len);
+    h->tid = htons(t->tid); /* 发对端的 ID 给对方*/
+    h->cid = htons(c->cid);
+    h->Ns = htons(t->control_seq_num);
+    h->Nr = htons(t->control_rec_seq_num);
+    t->control_seq_num++; /* 别忘了这一点 */
 }
 
 void hello (void *tun)
@@ -146,7 +148,8 @@ void hello (void *tun)
     t->hello = schedule (tv, hello, (void *) t);
 }
 
-void control_zlb (struct buffer *buf, struct tunnel *t, struct call *c)
+/* 暂时还不太明白这种 Packet 的意义 */
+void control_zlb(struct buffer *buf, struct tunnel *t, struct call *c)
 {
     recycle_outgoing (buf, t->peer);
     add_control_hdr (t, c, buf);
@@ -257,7 +260,8 @@ int control_finish (struct tunnel *t, struct call *c)
             else
                 add_hostname_avp (buf, hostname);
             add_vendor_avp (buf);
-            add_tunnelid_avp (buf, t->ourtid);
+            /* KEY CODE */
+            add_tunnelid_avp(buf, t->ourtid);
             if (t->ourrws >= 0)
                 add_avp_rws (buf, t->ourrws);
             if ((t->lac && t->lac->challenge)
@@ -282,6 +286,8 @@ int control_finish (struct tunnel *t, struct call *c)
                    challenge the peer, but we can't predict the response yet
                    because we don't know their hostname AVP */
             }
+
+            /* KEY CODE */
             add_control_hdr (t, c, buf);
             c->cnu = 0;
             if (gconfig.packet_dump)
@@ -433,6 +439,8 @@ int control_finish (struct tunnel *t, struct call *c)
             c->needclose = -1;
             return -EINVAL;
         }
+
+        /* 去重检查 */
         y = tunnels.head;
         while (y)
         {
@@ -442,7 +450,10 @@ int control_finish (struct tunnel *t, struct call *c)
                 (y != t))
             {
                 /* This can happen if we get a duplicate
-                   StartCCN or if they don't get our ACK packet */
+                 *  StartCCN or if they don't get our ACK packet
+                 *
+                 * 必须预防这种情况
+                 */
                 /*
                  * But it is legitimate for two different remote systems
                  * to use the same tid
@@ -456,6 +467,8 @@ int control_finish (struct tunnel *t, struct call *c)
             }
             y = y->next;
         }
+
+        /* 状态切换 */
         t->state = SCCRP;
         buf = new_outgoing (t);
         add_message_type_avp (buf, SCCRP);
@@ -474,8 +487,10 @@ int control_finish (struct tunnel *t, struct call *c)
             add_hostname_avp (buf, t->lns->hostname);
         else
             add_hostname_avp (buf, hostname);
-        add_vendor_avp (buf);
-        add_tunnelid_avp (buf, t->ourtid);
+        add_vendor_avp(buf);
+
+        /* 将自己的 ID 通告给对方 */
+        add_tunnelid_avp(buf, t->ourtid);
         if (t->ourrws >= 0)
             add_avp_rws (buf, t->ourrws);
         if (t->chal_us.state)
@@ -978,8 +993,8 @@ int control_finish (struct tunnel *t, struct call *c)
         strncpy (ip1, IPADDY (c->lns->localaddr), sizeof (ip1));
         strncpy (ip2, IPADDY (c->addr), sizeof (ip2));
         po = NULL;
-        po = add_opt (po, "passive");
-        po = add_opt (po, "nodetach");
+        po = add_opt(po, "passive");  /* 被动 */
+        po = add_opt(po, "nodetach"); /* 不可拆卸 */
         po = add_opt (po, "%s:%s", c->lns->localaddr ? ip1 : "", ip2);
         if (c->lns->authself)
         {
@@ -1166,8 +1181,11 @@ int control_finish (struct tunnel *t, struct call *c)
     return 0;
 }
 
-static inline int check_control (const struct buffer *buf, struct tunnel *t,
-                          struct call *c)
+/* 
+ * 检查包的长度，序列号，标志位，版本号等
+ */
+static inline int check_control(const struct buffer *buf, struct tunnel *t,
+                                struct call *c)
 {
     /*
      * Check if this is a valid control
@@ -1306,6 +1324,7 @@ static inline int check_control (const struct buffer *buf, struct tunnel *t,
     return 0;
 }
 
+/* 检查 版本号，数据长度是否符合要求 */
 static inline int check_payload (struct buffer *buf, struct tunnel *t,
                           struct call *c)
 {
@@ -1412,8 +1431,12 @@ static inline int check_payload (struct buffer *buf, struct tunnel *t,
 #endif
     return 0;
 }
-static inline int expand_payload (struct buffer *buf, struct tunnel *t,
-                           struct call *c)
+
+/* data packet 中不一定有 payload_hdr 的所有字段，这里做兼容处理
+ * 详细的原理见 network_thread 函数中的解析
+ */
+static inline int expand_payload(struct buffer *buf, struct tunnel *t,
+                                 struct call *c)
 {
     UNUSED(t);
     /*
@@ -1593,6 +1616,8 @@ void send_zlb (void *data)
     toss (buf);
 }
 
+
+/* 写到 pppd 对应的 tty 设备中 */
 static inline int write_packet (struct buffer *buf, struct tunnel *t, struct call *c,
                          int convert)
 {
@@ -1823,7 +1848,8 @@ inline int handle_packet (struct buffer *buf, struct tunnel *t,
 #ifdef DEBUG_ZLB
     struct timeval tv;
 #endif
-*/
+    */
+    /* 控制包，进入控制处理逻辑 */
     if (CTBIT (*((_u16 *) buf->start)))
         return handle_control(buf, t, c);
 

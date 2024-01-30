@@ -67,7 +67,8 @@ void l2tp_log (int level, const char *fmt, ...)
     }
 }
 
-void set_error (struct call *c, int error, const char *fmt, ...)
+/* 某个 call 发生了 error */
+void set_error(struct call *c, int error, const char *fmt, ...)
 {
     va_list args;
     va_start (args, fmt);
@@ -87,7 +88,8 @@ struct buffer *new_buf (int size)
     if (!size || size < 0)
         return NULL;
 
-    b = malloc (sizeof (struct buffer));
+    /* 严格来说，这里最好 calloc，其它未初始化的值未知，若忘记赋值则会带来隐患 */
+    b = malloc(sizeof(struct buffer));
     if (!b)
         return NULL;
 
@@ -99,7 +101,7 @@ struct buffer *new_buf (int size)
     }
     b->start = b->rstart;
     b->rend = b->rstart + size - 1;
-    b->len = size;
+    b->len = size;	/* 这里最好置0，表示尚未写入过 */
     b->maxlen = size;
     return b;
 }
@@ -150,7 +152,8 @@ void bufferDump (unsigned char *buf, int buflen)
     }
 }
 
-void do_packet_dump (struct buffer *buf)
+/* 将 buf 内容输出到 stdio */
+void do_packet_dump(struct buffer *buf)
 {
     size_t x;
     unsigned char *c = buf->start;
@@ -222,7 +225,8 @@ inline void safe_copy (char *a, char *b, int size)
     a[MIN (size, MAXSTRLEN - 1)] = '\000';
 }
 
-struct ppp_opts *add_opt (struct ppp_opts *option, char *fmt, ...)
+/* 添加一个配置到列表的末尾 */
+struct ppp_opts *add_opt(struct ppp_opts *option, char *fmt, ...)
 {
     va_list args;
     struct ppp_opts *new, *last;
@@ -249,6 +253,7 @@ struct ppp_opts *add_opt (struct ppp_opts *option, char *fmt, ...)
     else
         return new;
 }
+/* 释放 ppp 的参数列表 */
 void opt_destroy (struct ppp_opts *option)
 {
     struct ppp_opts *tmp;
@@ -260,6 +265,7 @@ void opt_destroy (struct ppp_opts *option)
     };
 }
 
+/* entropy：熵 */
 int get_egd_entropy(char *buf, int count)
 {
     UNUSED(buf);
@@ -308,7 +314,8 @@ int get_dev_entropy(unsigned char *buf, int count)
     return entropy_amount;
 }
 
-int get_entropy (unsigned char *buf, int count)
+/* entropy:熵（随机数） */
+int get_entropy(unsigned char *buf, int count)
 {
     if (rand_source == RAND_SYS)
     {

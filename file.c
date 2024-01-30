@@ -13,6 +13,10 @@
  *
  */
 
+/*
+ * 不对外暴露的函数，在声明处可以加上 static 强调下作用域
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -30,7 +34,7 @@ struct lac *laclist;
 struct lns *deflns;
 struct lac *deflac;
 struct global gconfig;
-char filerr[STRLEN];
+char filerr[STRLEN]; /* file'err 解析配置文件出错时的相关信息 */
 
 int parse_config (FILE *);
 struct keyword words[];
@@ -43,7 +47,7 @@ int init_config ()
     gconfig.port = UDP_LISTEN_PORT;
     gconfig.sarefnum = IP_IPSEC_REFINFO; /* default use the latest we know */
     gconfig.ipsecsaref = 0; /* default off - requires patched KLIPS kernel module */
-    gconfig.forceuserspace = 0; /* default off - allow kernel decap of data packets */
+    gconfig.forceuserspace = 0;             /* default off - allow kernel decap of(解密) data packets */
     gconfig.listenaddr = htonl(INADDR_ANY); /* Default is to bind (listen) to all interfaces */
     gconfig.debug_avp = 0;
     gconfig.debug_network = 0;
@@ -75,7 +79,7 @@ int init_config ()
         }
 
     }
-    returnedValue = parse_config (f);
+    returnedValue = parse_config(f); /* 解析配置文件中的选项 */
     fclose (f);
     return (returnedValue);
 }
@@ -226,6 +230,7 @@ int set_string (char *word, char *value, char *ptr, int len)
     return 0;
 }
 
+/* 设置 global 参数中的监听 端口 */
 int set_port (char *word, char *value, int context, void *item)
 {
     switch (context & ~CONTEXT_DEFAULT)
@@ -270,6 +275,7 @@ int set_rtimeout (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 设置 lac,lns 下的 call 和 tun 的 rws */
 int set_rws (char *word, char *value, int context, void *item)
 {
     if (atoi (value) < -1)
@@ -316,6 +322,7 @@ int set_rws (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 设置 lac,lns 的收发速率 */
 int set_speed (char *word, char *value, int context, void *item)
 {
     if (atoi (value) < 1 )
@@ -376,6 +383,7 @@ int set_maxretries (char *word, char *value, int context, void *item)
 
 }
 
+/* 设置：限制指数退避之间的秒数 */
 int set_capbackoff (char *word, char *value, int context, void *item)
 {
     switch (context & ~CONTEXT_DEFAULT)
@@ -396,6 +404,7 @@ int set_capbackoff (char *word, char *value, int context, void *item)
 
 }
 
+/* 设置 lac 的最大重播次数 */
 int set_rmax (char *word, char *value, int context, void *item)
 {
     if (atoi (value) < 1)
@@ -419,6 +428,7 @@ int set_rmax (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 设置 全局的授权文件路径 */
 int set_authfile (char *word, char *value, int context, void *item)
 {
     if (!strlen (value))
@@ -461,6 +471,7 @@ int set_autodial (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 设置 lac 或者 lns 的 rws */
 int set_flow (char *word, char *value, int context, void *item)
 {
     int v = -1;
@@ -537,6 +548,7 @@ int set_authname (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 设置 lac 或者 lns 的 hostname */
 int set_hostname (char *word, char *value, int context, void *item)
 {
     struct lac *l = (struct lac *) item;
@@ -656,6 +668,7 @@ int set_debug (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 是否将 peer等参数传递给 pppd 进程*/
 int set_pass_peer (char *word, char *value, int context, void *item)
 {
     switch (context & ~CONTEXT_DEFAULT)
@@ -676,6 +689,7 @@ int set_pass_peer (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 设置 lac 和 lns 的 ppp'opt 的配置文件路径 */
 int set_pppoptfile (char *word, char *value, int context, void *item)
 {
     struct lac *l = (struct lac *) item;
@@ -702,6 +716,9 @@ int set_papchap (char *word, char *value, int context, void *item)
 {
     int result;
     char *c;
+    /* 严格要求的话这里不应该一个 item 即当作 lac 又当作 lns 类型来转换，不过
+     * 这两种情况互斥，所以也不会出错，用 union 更好理解
+     */
     struct lac *l = (struct lac *) item;
     struct lns *n = (struct lns *) item;
     if (set_boolean (word, value, &result))
@@ -750,6 +767,7 @@ int set_papchap (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 设置断线重连标志位 */
 int set_redial (char *word, char *value, int context, void *item)
 {
     switch (context & ~CONTEXT_DEFAULT)
@@ -1040,6 +1058,7 @@ int set_localiprange (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 设置 lacs 的 ip 范围 */
 int set_lac (char *word, char *value, int context, void *item)
 {
     struct lns *lns = (struct lns *) item;
@@ -1062,6 +1081,7 @@ int set_lac (char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* exclusive 独家 */
 int set_exclusive (char *word, char *value, int context, void *item)
 {
     switch (context & ~CONTEXT_DEFAULT)
@@ -1328,6 +1348,9 @@ int set_rand_source (char *word, char *value, int context, void *item)
     }
 }
 
+/*
+ * 参数的作用域分为：global、lns、las
+ */
 int parse_config (FILE * f)
 {
     /* Read in the configuration file handed to us */
@@ -1344,7 +1367,7 @@ int parse_config (FILE * f)
     struct lac *tc;
     while (!feof (f))
     {
-        if (NULL == fgets (buf, sizeof (buf), f))
+        if (NULL == fgets(buf, sizeof(buf), f)) /* 尝试读一行 */
         {
             /* Error or EOL */
             break;
@@ -1566,6 +1589,7 @@ int parse_one_option(char *word, char *value, int context, void *item)
     return 0;
 }
 
+/* 不同的参数，调用不同的函数进行解析 */
 struct keyword words[] = {
     {"listen-addr", &set_listenaddr},
     {"port", &set_port},

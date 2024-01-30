@@ -37,7 +37,8 @@ int server_socket;              /* Server socket */
 int kernel_support;             /* Kernel Support there or not? */
 #endif
 
-int init_network (void)
+// 根据配置文件，在指定的 IP 地址上创建 socket，设置参数后，开启监听
+int init_network(void)
 {
     long arg;
     unsigned int length = sizeof (server);
@@ -133,7 +134,8 @@ int init_network (void)
     return 0;
 }
 
-static inline void extract (void *buf, int *tunnel, int *call)
+/* 从原始字节流中提取 tunnel-id, call-id */
+static inline void extract(void *buf, int *tunnel, int *call)
 {
     /*
      * Extract the tunnel and call #'s, and fix the order of the
@@ -153,6 +155,7 @@ static inline void extract (void *buf, int *tunnel, int *call)
     }
 }
 
+/* 数据包中的包头字段 网络字节序->主机字节序 */
 static inline void fix_hdr (void *buf)
 {
     /*
@@ -196,6 +199,7 @@ void dethrottle (void *call)
 	} */
 }
 
+// xmit:发射
 void control_xmit (void *b)
 {
     struct buffer *buf = (struct buffer *) b;
@@ -222,6 +226,7 @@ void control_xmit (void *b)
     ns = ntohs (((struct control_hdr *) (buf->start))->Ns);
     if (t)
     {
+        /* 若被对方确认则无需重传 */
         if (ns < t->cLr)
         {
 #ifdef DEBUG_CONTROL_XMIT
@@ -265,6 +270,8 @@ void control_xmit (void *b)
         /*
          * Adaptive timeout with exponential backoff.  The delay grows
          * exponentialy, unless it's capped by configuration.
+         *
+         * 放入定时器队列，超时没有被对方确认则重传
          */
         unsigned shift_by = (buf->retries-1);
         if (shift_by > 31)
@@ -295,6 +302,7 @@ unsigned char* get_inner_ppp_type (struct buffer *buf)
 	return ppp_type_byte;
 }
 
+/* 稍微整理下后，调用 socket 相关的 api 发送数据 */
 void udp_xmit (struct buffer *buf, struct tunnel *t)
 {
     struct cmsghdr *cmsg = NULL;
@@ -379,6 +387,7 @@ void udp_xmit (struct buffer *buf, struct tunnel *t)
     }
 }
 
+/* 将所有要查看的 fd 放入 readfds 集合中 */
 int build_fdset (fd_set *readfds)
 {
 	struct tunnel *tun;
@@ -444,6 +453,7 @@ int build_fdset (fd_set *readfds)
 	return max;
 }
 
+/* 程序设计就是一个大的死循环，等待网络数据包（定时器超时）到来，并处理 */
 void network_thread ()
 {
     /*
@@ -480,10 +490,11 @@ void network_thread ()
         process_signal();
         max = build_fdset (&readfds);
         ptv = process_schedule(&tv);
-        ret = select (max + 1, &readfds, NULL, NULL, ptv);
+        // ptv 放到 这里，恰到好处
+        ret = select(max + 1, &readfds, NULL, NULL, ptv);
         if (ret <= 0)
         {
-            if (ret == 0)
+            if (ret == 0) /* timeout */
             {
                 if (gconfig.debug_network)
                 {
@@ -492,7 +503,7 @@ void network_thread ()
                         __FUNCTION__, gconfig.max_retries, tunnels.head->ourtid);
                 }
             }
-            else
+            else /* recv nothing, socket is free */
             {
                 if (gconfig.debug_network)
                 {
@@ -507,7 +518,7 @@ void network_thread ()
         {
             do_control ();
         }
-        server_socket_processed = 0;
+        server_socket_processed = 0;	// 是否已处理 server_socket_processed 文件描述符
         currentfd = NULL;
         st = tunnels.head;
         while (st || !server_socket_processed)
@@ -529,7 +540,26 @@ void network_thread ()
              */
             recycle_buf (buf);
 
-            /* Reserve space for expanding payload packet headers */
+                /* Reserve space for expanding payload packet headers
+                 *
+                 * 可能收到 control packet 或者是 data packet
+                 * 在进程中，都是用同一个 payload_hdr 结构体表示
+                 * 为了兼容这两种情况，这里预留一个 MEM，方便处理 data packet 中
+                 * 缺少某些字段的情况，这种情况下 payload_hdr 会往前移动（payload_hdr
+                 * 假设收到了所有的字段）
+                 */
+
+                /*
+                 * 实际从 socket 接收到的byte     [header1+header3+header4]
+                 * payload_hdr 的字节序   [header1+header2+header3+header4]
+                 * 内存准备               [PAYLOAD_BUF----headerX]
+                 *
+                 * 收到数据后，用事先预留的 PAYLOAD_BUF 字段来将 实际从 socket 接收
+                 * 到的头(可能缺某些字段)扩展到 payload_hdr 要求的完整头（不改变
+                 * data packet 中的 携带数据的起始地址）,这样的效果就是即使
+                 * data packet 没有发送完整的头数据过来，但我这边还是可以用 payload_hdr
+                 * 来引用发送过来的头
+                 */
             buf->start += PAYLOAD_BUF;
             buf->len -= PAYLOAD_BUF;
 
@@ -610,6 +640,9 @@ void network_thread ()
 	     * classes of service to packets not inside of IPsec.
 	     */
 	    buf->len = recvsize;
+				/* 处理报头的字节序顺序
+				 * 读取 tunnelID,sessionID 
+				 */
 	    fix_hdr (buf->start);
 	    extract (buf->start, &tunnel, &call);
 
@@ -687,7 +720,7 @@ void network_thread ()
                 if ((sc->fd < 0) || !FD_ISSET (sc->fd, &readfds))
                     continue;
 
-                /* Got some payload to send */
+                /* Got some ppp payload to send peer */
                 int result;
 
                 while ((result = read_packet (sc)) > 0)

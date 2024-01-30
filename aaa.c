@@ -34,7 +34,8 @@ void init_addr ()
         uaddr[x] = NULL;
 }
 
-static int ip_used (unsigned int addr)
+/* 此 IP 是否被用过（能够被重新使用?） */
+static int ip_used(unsigned int addr)
 {
     struct addr_ent *tmp;
     tmp = uaddr[addr % ADDR_HASH_SIZE];
@@ -57,7 +58,9 @@ void mk_challenge (unsigned char *c, int length)
         s[x] = rand (); */
 }
 
-void reserve_addr (unsigned int addr)
+/* 插入一个 node , 哈希桶算法
+ * reserve：预定
+ */
 {
     /* Mark this address as in use */
     struct addr_ent *tmp, *tmp2;
@@ -71,7 +74,8 @@ void reserve_addr (unsigned int addr)
     tmp2->addr = addr;
 }
 
-void unreserve_addr (unsigned int addr)
+/* 删除一个 node */
+void unreserve_addr(unsigned int addr)
 {
     struct addr_ent *tmp, *last = NULL, *z;
     addr = ntohl (addr);
@@ -100,7 +104,8 @@ void unreserve_addr (unsigned int addr)
     }
 }
 
-unsigned int get_addr (struct iprange *ipr)
+/* 从给定的地址段中找到一个未被使用的，符合xxx 条件的地址出来 */
+unsigned int get_addr(struct iprange *ipr)
 {
     unsigned int x, y;
     int status;
@@ -133,6 +138,9 @@ unsigned int get_addr (struct iprange *ipr)
     return 0;
 }
 
+/* 按照 global 配置文件，读取与之匹配的（us，them）secret 参数出来
+ * NOTE： 函数的返回值含义
+ */
 static int get_secret (char *us, char *them, unsigned char *secret, int size)
 {
     FILE *f;
@@ -294,7 +302,8 @@ int handle_challenge (struct tunnel *t, struct challenge *chal)
     return 0;
 }
 
-struct lns *get_lns (struct tunnel *t)
+/* 根据对端的 IP 看看对应的 tun 属于那个 tunnel */
+struct lns *get_lns(struct tunnel *t)
 {
     /*
      * Look through our list of LNS's and
@@ -360,7 +369,9 @@ static inline void print_challenge (struct challenge *chal)
     l2tp_log (LOG_DEBUG, "secret: %s\n", chal->secret);
 }
 #endif
-void encrypt_avp (struct buffer *buf, _u16 len, struct tunnel *t)
+
+// avp 的加解密
+void encrypt_avp(struct buffer *buf, _u16 len, struct tunnel *t)
 {
     /* Encrypts an AVP of len, at data.  We assume there
        are two "spare bytes" before the data pointer,l but otherwise

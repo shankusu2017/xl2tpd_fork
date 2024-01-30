@@ -23,7 +23,9 @@ struct call
 /*	int rbit;		Set the "R" bit on the next packet? */
     int lbit;                   /* Should we send length field? */
 /*	int throttle;	Throttle the connection? */
-    int seq_reqd;               /* Sequencing required? */
+    int seq_reqd; /* Sequencing required? seq must in data packet? */
+
+    /* 收发数据统计 */
     int tx_pkts;                /* Transmitted packets */
     int rx_pkts;                /* Received packets */
     int tx_bytes;               /* transmitted bytes */
@@ -38,9 +40,13 @@ struct call
     int prx;                    /* What was the last packet we sent
                                    as an Nr? Used to manage payload ZLB's */
     int state;                  /* Current state */
-    int frame;                  /* Framing being used */
+						  
+    int frame;         /* Framing being used for PPP */
     struct call *next;          /* Next call, for linking */
     int debug;
+
+/* 此域非常重要
+ */
     int msgtype;                /* What kind of message are we
                                    working with right now? */
 
@@ -68,8 +74,11 @@ struct call
        1                       1            Waiting for closing notice
        0                       1            Closing ZLB received, actulaly close
      */
-    struct tunnel *container;   /* Tunnel we belong to */
-    int fd;                     /* File descriptor for pty */
+
+    struct tunnel *container;          /* Tunnel we belong to */
+
+	/* 与 PPP 进程沟通的 pty 相关参数 */
+    int fd;                            /* File descriptor for pty */
     unsigned char rbuf[MAX_RECV_SIZE];  /* pty read buffer */
     int rbuf_pos;               /* Read buffer position */
     int rbuf_max;               /* Read buffer data length */
@@ -77,9 +86,11 @@ struct call
     struct termios *oldptyconf;
     int die;
     int nego;                   /* Show negotiation? */
-    int pppd;                   /* PID of pppd */
-    int result;                 /* Result code */
-    int error;                  /* Error code */
+    int pppd;                 /* PID of pppd 另起的 pppd 的进程号，和上面的 fd 相呼应 */
+	
+    int result;               /* Result code，处理结果 */
+    int error;                /* Error code，具体的错误码 */
+	
     int fbit;                   /* Use sequence numbers? */
     int ourfbit;                /* Do we want sequence numbers? */
 /*	int ourrws;		Our RWS for the call */

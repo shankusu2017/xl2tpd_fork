@@ -18,6 +18,7 @@
 #include "l2tp.h"
 #include "scheduler.h"
 
+/* 所有定时器按照超时时间先后组成的 list */
 struct schedule_entry *events;
 
 void init_scheduler (void)
@@ -25,7 +26,8 @@ void init_scheduler (void)
     events = NULL;
 }
 
-struct timeval *process_schedule (struct timeval *ptv)
+/* 将已经超时的 node 执行，并返回下一个即将超时的 node */
+struct timeval *process_schedule(struct timeval *ptv)
 {
     /* Check queue for events which should be
        executed right now.  Execute them, then
@@ -78,8 +80,9 @@ struct timeval *process_schedule (struct timeval *ptv)
     }
 }
 
-struct schedule_entry *schedule (struct timeval tv, void (*func) (void *),
-                                 void *data)
+/* 按照超时的时间戳（绝对时间），插入到列表中（早的排在前面）*/
+struct schedule_entry *schedule(struct timeval tv, void (*func)(void *),
+                                void *data)
 {
     /* Schedule func to be run at relative time tv with data
        as arguments.  If it has already expired, run it 
@@ -121,8 +124,9 @@ struct schedule_entry *schedule (struct timeval tv, void (*func) (void *),
 
 }
 
-inline struct schedule_entry *aschedule (struct timeval tv,
-                                         void (*func) (void *), void *data)
+/* 新增一个定时 node */
+inline struct schedule_entry *aschedule(struct timeval tv,
+                                        void (*func)(void *), void *data)
 {
     /* Schedule func to be run at absolute time tv in the future with data
        as arguments */
@@ -138,7 +142,8 @@ inline struct schedule_entry *aschedule (struct timeval tv,
     return schedule (tv, func, data);
 }
 
-void deschedule (struct schedule_entry *s)
+/* 从定时队列中删除指定的节点 */
+void deschedule(struct schedule_entry *s)
 {
     struct schedule_entry *p = events, *q = NULL;
     if (!s)

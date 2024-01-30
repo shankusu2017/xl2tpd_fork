@@ -21,12 +21,16 @@
 #define AVP_MAX 39
 
 struct avp avps[] = {
-
+	/*
+	 * 最重要的 avp_type，标识该 control-message 的 type 
+	 */
     {0, 1, &message_type_avp, "Message Type"},
     {1, 1, &result_code_avp, "Result Code"},
     {2, 1, &protocol_version_avp, "Protocol Version"},
     {3, 1, &framing_caps_avp, "Framing Capabilities"},
     {4, 1, &bearer_caps_avp, "Bearer Capabilities"},
+
+	/* NULL 表示不处理此类 message，下同 */
     {5, 0, NULL, "Tie Breaker"},
     {6, 0, &firmware_rev_avp, "Firmware Revision"},
     {7, 0, &hostname_avp, "Host Name"},
@@ -65,12 +69,12 @@ struct avp avps[] = {
 };
 
 char *msgtypes[] = {
-    NULL,
+    NULL, /* reserved */
     "Start-Control-Connection-Request",
     "Start-Control-Connection-Reply",
     "Start-Control-Connection-Connected",
     "Stop-Control-Connection-Notification",
-    NULL,
+    NULL, /* reserved */
     "Hello",
     "Outgoing-Call-Request",
     "Outgoing-Call-Reply",
@@ -78,7 +82,7 @@ char *msgtypes[] = {
     "Incoming-Call-Request",
     "Incoming-Call-Reply",
     "Incoming-Call-Connected",
-    NULL,
+    NULL, /* reserved */
     "Call-Disconnect-Notify",
     "WAN-Error-Notify",
     "Set-Link-Info"
@@ -128,6 +132,7 @@ void wrong_length (struct call *c, char *field, int expected, int found,
 struct unaligned_u16 {
 	_u16	s;
 } __attribute__((packed));
+/* packed 属性，避免发生 int32 这种意外的对齐 bug */
 
 /*
  * t, c, data, and datalen may be assumed to be defined for all AVP's
@@ -143,7 +148,8 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
      */
 
     struct unaligned_u16 *raw = data;
-    c->msgtype = ntohs (raw[3].s);
+    /* 跳过 avp_hdr 头,将 message_type 暂存这里 */
+    c->msgtype = ntohs(raw[3].s);
     if (datalen != 8)
     {
         if (DEBUG)
@@ -161,8 +167,13 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
     }
     if (gconfig.debug_avp)
         if (DEBUG)
-            l2tp_log (LOG_DEBUG, "%s: message type %d (%s)\n", __FUNCTION__,
-                 c->msgtype, msgtypes[c->msgtype]);
+            l2tp_log(LOG_DEBUG, "%s: message type %d (%s)\n", __FUNCTION__,
+                     c->msgtype, msgtypes[c->msgtype]);
+
+
+/* 状态转换之间的逻辑性检查（状态A是否能直接转到状态B?）
+ * SANITY CHECK：完整性检查
+ */
 #ifdef SANITY
     if (t->sanity)
     {
@@ -181,7 +192,11 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
 
         switch (c->msgtype)
         {
+
+/**************** 通道创建 ****************/
         case SCCRQ:
+            /* 初始状态和 SCCRQ 可以处理 SCCRQ, 其它状态则不行（链接已经在进行中了，
+             * 不能再倒退到链接开始建立这个状态 */
             if ((t->state != 0) && (t->state != SCCRQ))
             {
                 /*
@@ -216,6 +231,8 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
                 return -EINVAL;
             }
             break;
+
+/**************** 呼叫创建 ****************/	
         case ICRQ:
             if (t->state != SCCCN)
             {
@@ -225,6 +242,7 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
                          __FUNCTION__);
                 return -EINVAL;
             }
+			/* 这个判断条件，不好理解,参考这个注释 70271f3f */
             if (c != t->self)
             {
                 if (DEBUG)
@@ -320,7 +338,7 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
             if (DEBUG)
                 l2tp_log (LOG_DEBUG, "%s: new incoming call\n", __FUNCTION__);
         }
-        tmp = new_call (t);
+        tmp = new_call(t);	/* KEY: ff317002 */
         if (!tmp)
         {
             l2tp_log (LOG_WARNING, "%s: unable to create new call\n", __FUNCTION__);
@@ -339,8 +357,9 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
-int rand_vector_avp (struct tunnel *t, struct call *c, void *data,
-                     int datalen)
+/* 随机值（用于加密方向？） */
+int rand_vector_avp(struct tunnel *t, struct call *c, void *data,
+                    int datalen)
 {
     int size;
     struct unaligned_u16 *raw = data;
@@ -375,7 +394,8 @@ int rand_vector_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
-int ignore_avp (struct tunnel *t, struct call *c, void *data, int datalen)
+/* 忽略掉某些 avp */
+int ignore_avp(struct tunnel *t, struct call *c, void *data, int datalen)
 {
     /*
      * The spec says we have to accept authentication information
@@ -398,7 +418,13 @@ int ignore_avp (struct tunnel *t, struct call *c, void *data, int datalen)
     return 0;
 }
 
-int seq_reqd_avp (struct tunnel *t, struct call *c, void *data, int datalen)
+
+
+/* The Sequencing Required AVP, Attribute Type 39, indicates to the
+ * LNS that Sequence Numbers MUST always be present on the data
+ * channel
+ */
+int seq_reqd_avp(struct tunnel *t, struct call *c, void *data, int datalen)
 {
     UNUSED(data);
 #ifdef SANITY
@@ -415,7 +441,7 @@ int seq_reqd_avp (struct tunnel *t, struct call *c, void *data, int datalen)
         }
         switch (c->msgtype)
         {
-        case ICCN:
+        case ICCN:	/* 其它的 msgtype 不准用携带此消息 */
             break;
         default:
             if (DEBUG)
@@ -435,8 +461,9 @@ int seq_reqd_avp (struct tunnel *t, struct call *c, void *data, int datalen)
     return 0;
 }
 
-int result_code_avp (struct tunnel *t, struct call *c, void *data,
-                     int datalen)
+/* 处理结果码 */
+int result_code_avp(struct tunnel *t, struct call *c, void *data,
+                    int datalen)
 {
     /*
      * Find out what version of L2TP the other side is using.
@@ -460,6 +487,8 @@ int result_code_avp (struct tunnel *t, struct call *c, void *data,
         }
         switch (c->msgtype)
         {
+        /* 断开 tunnel 或者 session 时才会告知 error-reason，其它情况下发送此消息
+         * 属于逻辑错误 */
         case CDN:
         case StopCCN:
             break;
@@ -505,6 +534,7 @@ int result_code_avp (struct tunnel *t, struct call *c, void *data,
         return 0;
     }
 
+	/* 如果携带了错误码则读取错误码 */
     if (datalen >= 10) {
         error = ntohs (raw[4].s);
         if (((error & 0xFF) == 0) && (error >> 8 != 0))
@@ -543,8 +573,10 @@ int result_code_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
-int protocol_version_avp (struct tunnel *t, struct call *c, void *data,
-                          int datalen)
+
+/* 通告自己的软件版本 */
+int protocol_version_avp(struct tunnel *t, struct call *c, void *data,
+                         int datalen)
 {
     /*
      * Find out what version of L2TP the other side is using.
@@ -638,8 +670,9 @@ int framing_caps_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
-int bearer_caps_avp (struct tunnel *t, struct call *c, void *data,
-                     int datalen)
+/* 自己支持模拟设备、数字设备？*/
+int bearer_caps_avp(struct tunnel *t, struct call *c, void *data,
+                    int datalen)
 {
     /*
      * What kind of bearer channels does our peer support?
@@ -693,8 +726,9 @@ int bearer_caps_avp (struct tunnel *t, struct call *c, void *data,
 
 /* FIXME: I need to handle tie breakers eventually */
 
-int firmware_rev_avp (struct tunnel *t, struct call *c, void *data,
-                      int datalen)
+/* 固件版本 */
+int firmware_rev_avp(struct tunnel *t, struct call *c, void *data,
+                     int datalen)
 {
     /*
      * Report and record remote firmware version
@@ -740,8 +774,9 @@ int firmware_rev_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
-int bearer_type_avp (struct tunnel *t, struct call *c, void *data,
-                     int datalen)
+/* bearer type 暂不清楚用途（对端的设备类型） */
+int bearer_type_avp(struct tunnel *t, struct call *c, void *data,
+                    int datalen)
 {
     /*
      * What kind of bearer channel is the call on?
@@ -787,7 +822,8 @@ int bearer_type_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
-int frame_type_avp (struct tunnel *t, struct call *c, void *data, int datalen)
+/* 携载的 PPP 帧的类型（同步、异步）*/
+int frame_type_avp(struct tunnel *t, struct call *c, void *data, int datalen)
 {
     /*
      * What kind of frame channel is the call on?
@@ -888,8 +924,9 @@ int hostname_avp (struct tunnel *t, struct call *c, void *data, int datalen)
     return 0;
 }
 
-int dialing_number_avp (struct tunnel *t, struct call *c, void *data,
-                        int datalen)
+/* PPP 进程 环境变量 CALLED_ID 的值 */
+int dialing_number_avp(struct tunnel *t, struct call *c, void *data,
+                       int datalen)
 {
     /*
      * What is the peer's name?
@@ -999,8 +1036,9 @@ int dialed_number_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
-int sub_address_avp (struct tunnel *t, struct call *c, void *data,
-                     int datalen)
+/* 未使用到 */
+int sub_address_avp(struct tunnel *t, struct call *c, void *data,
+                    int datalen)
 {
     /*
      * What is the peer's name?
@@ -1218,8 +1256,13 @@ int chalresp_avp (struct tunnel *t, struct call *c, void *data, int datalen)
     return 0;
 }
 
-int assigned_tunnel_avp (struct tunnel *t, struct call *c, void *data,
-                         int datalen)
+
+/* tunnel id :非常重要
+ * ID 是对端向我通告本次通信中：它的 ID 是多少，后续通信时，发往对端的消息中，
+ * 需要携带此ID，方便对端找到对应的 tunnel 的数据，下面的call id 同理
+ */
+int assigned_tunnel_avp(struct tunnel *t, struct call *c, void *data,
+                        int datalen)
 {
     /*
      * What is their TID that we must use from now on?
@@ -1271,6 +1314,7 @@ int assigned_tunnel_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
+/* call id */
 int assigned_call_avp (struct tunnel *t, struct call *c, void *data,
                        int datalen)
 {
@@ -1313,8 +1357,13 @@ int assigned_call_avp (struct tunnel *t, struct call *c, void *data,
         c->qcid = ntohs (raw[3].s);
     }
     else if (c->msgtype == ICRQ)
-    {
-        t->call_head->cid = ntohs (raw[3].s);
+    {	/* 
+         * NOTE: 代码默认这边新构建了一个 call 且放到了队列头，
+         * 若不是这样，则需要修改代码, 找到对应的 call
+         *
+         * 这里记录下对方的 call id
+    	 */
+        t->call_head->cid = ntohs(raw[3].s);
     }
     else if (c->msgtype == ICRP)
     {
@@ -1527,8 +1576,10 @@ int tx_speed_avp (struct tunnel *t, struct call *c, void *data, int datalen)
     }
     return 0;
 }
-int call_physchan_avp (struct tunnel *t, struct call *c, void *data,
-                       int datalen)
+
+/* Physical channel ID */
+int call_physchan_avp(struct tunnel *t, struct call *c, void *data,
+                      int datalen)
 {
     /*
      * What is the physical channel?
@@ -1639,8 +1690,8 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
     /* TODO: Refactor function to not use "goto next" */
 
     struct avp_hdr *avp;
-    int len = buf->len - sizeof (struct control_hdr);
-    int firstavp = -1;
+    int len = buf->len - sizeof(struct control_hdr);
+    int firstavp = -1; /* 初始为 1 可能更好理解*/
     int hidlen = 0;
     char *data = buf->start + sizeof (struct control_hdr);
     avp = (struct avp_hdr *) data;
@@ -1654,6 +1705,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
         hidlen = 0;
         /* Go ahead and byte-swap the header */
         swaps (avp, sizeof (struct avp_hdr));
+        /* 不认识的属性ID */
         if (avp->attr > AVP_MAX)
         {
             if (AMBIT (avp->length))
@@ -1686,6 +1738,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
             c->needclose = -1;
             return -EINVAL;
         }
+		// 第一个 AVP 必须是 message_type 的 avp 
         if (avp->attr && firstavp)
         {
             l2tp_log (LOG_WARNING, "%s: First AVP was not message type.\n",

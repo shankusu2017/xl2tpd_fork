@@ -29,7 +29,7 @@ struct iprange
 {
     unsigned int start;
     unsigned int end;
-    int sense;
+    int sense; /* SENSE_ALLOW ：允许此范围内的 ip 地址，SENSE_DENY：拒绝此范围内的 ip 地址 */
     struct iprange *next;
 };
 
@@ -40,11 +40,11 @@ struct host
     struct host *next;
 };
 
-
-#define CONTEXT_GLOBAL 	1
-#define CONTEXT_LNS	   	2
-#define CONTEXT_LAC		3
-#define CONTEXT_DEFAULT	256
+// 配置文件中某项配置的所属域（是全局配置还是lns配置还是lac配置还是...）
+#define CONTEXT_GLOBAL 1
+#define CONTEXT_LNS 2
+#define CONTEXT_LAC 3
+#define CONTEXT_DEFAULT 256
 
 #define SENSE_ALLOW -1
 #define SENSE_DENY 0
@@ -65,6 +65,11 @@ struct lns
     struct lns *next;
     int exclusive;              /* Only one tunnel per host? */
     int active;                 /* Is this actively in use? */
+	
+	/* Local IP for PPP connections： 配置选项中的 local ip, 
+	 * 对于 ppp 进程而言，server-ip(P2P 网卡中的 inet 192.168.1.99  netmask 255.255.255.255  destination 192.168.1.128) 
+	 * inet 192.168.1.99
+	 */
     unsigned int localaddr;     /* Local IP for PPP connections */
     int tun_rws;                /* Receive window size (tunnel) */
     int call_rws;               /* Call rws */
@@ -83,6 +88,8 @@ struct lns
     struct iprange *range;      /* Range of IP's we provide */
     struct iprange *localrange; /* Range of local IP's we provide */
     int assign_ip;              /* Do we actually provide IP addresses? */
+
+// 认证相关	
     int passwdauth;             /* Authenticate by passwd file? (or PAM) */
     int pap_require;            /* Require PAP auth for PPP */
     int chap_require;           /* Require CHAP auth for PPP */
@@ -146,6 +153,7 @@ struct global
     unsigned int listenaddr;    /* IP address to bind to */ 
     int port;                   /* Port number to listen to */
 
+	/* 一些配置文件路径 */
     char authfile[STRLEN];      /* File containing authentication info */
     char altauthfile[STRLEN];   /* File containing authentication info */
     char configfile[STRLEN];    /* File containing configuration info */
@@ -157,7 +165,7 @@ struct global
     int syslog;                 /* Use syslog for logging? */
     int accesscontrol;          /* Use access control? */
     int forceuserspace;         /* Force userspace? */
-    int packet_dump;		/* Dump (print) all packets? */
+    int packet_dump;            /* Dump (print) all packets? 打印 packets */
     int debug_avp;		/* Print AVP debugging info? */
     int debug_network;		/* Print network debugging info? */
     int debug_tunnel;		/* Print tunnel debugging info? */

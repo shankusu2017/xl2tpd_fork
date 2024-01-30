@@ -46,7 +46,8 @@ inline void recycle_payload (struct buffer *buf, struct sockaddr_in peer)
     buf->peer = peer;
 }
 
-void add_payload_hdr (struct tunnel *t, struct call *c, struct buffer *buf)
+/* 在buf的最前面加一个 l2tp 头(从pppd转发到对端的l2tpd-client) */
+void add_payload_hdr(struct tunnel *t, struct call *c, struct buffer *buf)
 {
     struct payload_hdr *p;
     buf->start -= sizeof (struct payload_hdr);
@@ -88,7 +89,8 @@ void add_payload_hdr (struct tunnel *t, struct call *c, struct buffer *buf)
 /*	c->rbit=0; */
 }
 
-int read_packet (struct call *c)
+/* 从 PPPD 终端读 packet，添加l2tp头后，转发给对端的 l2tp-client */
+int read_packet(struct call *c)
 {
     struct buffer *buf = c->ppp_buf;
     unsigned char ch;
@@ -376,7 +378,11 @@ void call_close (struct call *c)
     c->closing = -1;
 }
 
-void destroy_call (struct call *c)
+/*
+ * 发送关闭信号给对应进程
+ * 从 tunnel, lac 队列中移除
+ */
+void destroy_call(struct call *c)
 {
     /*
      * Here, we unconditionally destroy a call.
@@ -410,7 +416,7 @@ void destroy_call (struct call *c)
      * Kill off PPPD and wait for it to
      * return to us.  This should only be called
      * in rare cases if PPPD hasn't already died
-     * voluntarily
+     * voluntarily（自愿）
      */
     pid = c->pppd;
     if (pid > 0)
@@ -488,8 +494,13 @@ void destroy_call (struct call *c)
     free (c);
 }
 
-
-struct call *new_call (struct tunnel *parent)
+/*
+ * 只有三种情况下会 new_call
+ *  1. new tunnel 时，顺便new 一个 call 且会进行 tunnel-self = new call, KEY: f26c6d4d
+ *  2. 收到 ICRQ 消息时，新建一个 call 出来，且会放到 tunnel->call_list 的 队列头, KEY: ff317002 
+ *  3. LAC_CALL 函数调用中，KEY: 1e48c24c
+ */
+struct call *new_call(struct tunnel *parent)
 {
     unsigned char entropy_buf[2] = "\0";
     struct call *tmp = calloc (1,sizeof (struct call));
@@ -513,7 +524,13 @@ struct call *new_call (struct tunnel *parent)
     tmp->nego = 0;
     tmp->debug = 0;
     tmp->seq_reqd = 0;
-    tmp->state = 0;             /* Nothing so far */
+    tmp->state = 0; /* Nothing so far */
+
+    /* 若是在 new_tunnel 中 new_call, 则 parent->self 为 NULL
+     * 那时候的 call 相当于一个临时的 call ,所以没有正式的 ourcid
+     * 当 parent->self 已经有值的情况下， new_call 相当于要 构建一个正式的 call
+     * 这时候就需要 ourcid 了
+	 */
     if (parent->self)
     {
 #ifndef TESTING
@@ -541,13 +558,16 @@ struct call *new_call (struct tunnel *parent)
     tmp->bearer = -1;
     tmp->cid = -1;
     tmp->qcid = -1;
-    tmp->container = parent;
-/*	tmp->rws = -1; */
+    tmp->container = parent; // 指向所属的 tunnel
+    /*	tmp->rws = -1; */
     tmp->fd = -1;
     tmp->rbuf_pos = 0;
     tmp->rbuf_max = 0;
-    tmp->ppp_buf = new_payload (parent->peer);
-    tmp->oldptyconf = malloc (sizeof (struct termios));
+
+    /* 若是在 new_tunel 中 new_call 则 parent->peer 是 NULL */
+    tmp->ppp_buf = new_payload(parent->peer);
+
+    tmp->oldptyconf = malloc(sizeof(struct termios));
     tmp->pnu = 0;
     tmp->cnu = 0;
     tmp->needclose = 0;
@@ -595,8 +615,11 @@ struct call *get_tunnel (int tunnel, unsigned int addr, int port)
     return NULL;
 }
 
-struct call *get_call (int tunnel, int call,  struct in_addr addr, int port,
-		       IPsecSAref_t refme, IPsecSAref_t refhim)
+/* lac->lns 
+ * 查找指定tunnel下的指定call（某些情况下：新建 tunnel(内部创建一个call) 放入 tunnels队列 
+ */
+struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
+                      IPsecSAref_t refme, IPsecSAref_t refhim)
 {
     /*
      * Figure out which call struct should handle this.
@@ -631,7 +654,7 @@ struct call *get_call (int tunnel, int call,  struct in_addr addr, int port,
                     return NULL;
                 }
                 else
-                {
+                {	/* call-id 为 0 时返回 st->self 70271f3f */
                     return st->self;
                 }
             }
@@ -671,13 +694,17 @@ struct call *get_call (int tunnel, int call,  struct in_addr addr, int port,
                  __FUNCTION__, IPADDY (addr), ntohs (port));
             return NULL;
         };
+
+        /* 设置与之通信的 对端 socket 参数 */
         st->peer.sin_family = AF_INET;
         st->peer.sin_port = port;
 	st->refme  = refme;
 	st->refhim = refhim;
         st->udp_fd = -1;
         st->pppox_fd = -1;
-        bcopy (&addr, &st->peer.sin_addr, sizeof (addr));
+        bcopy(&addr, &st->peer.sin_addr, sizeof(addr));
+
+        /* 放入 tunnels 队列中 */
         st->next = tunnels.head;
         tunnels.head = st;
         tunnels.count++;

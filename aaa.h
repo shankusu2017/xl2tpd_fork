@@ -23,8 +23,8 @@
 #define VECTOR_SIZE 16
 
 #define STATE_NONE 		 0
-#define STATE_CHALLENGED 1
-#define STATE_COMPLETE	 2
+#define STATE_CHALLENGED 1		/* 已获得相应资料 */
+#define STATE_COMPLETE	 2		/* 此宏未使用 */
 
 struct addr_ent
 {

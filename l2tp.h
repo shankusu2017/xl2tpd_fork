@@ -144,7 +144,7 @@ struct tunnel
     struct call *call_head;     /* Member calls */
     struct tunnel *next;        /* Allows us to be linked easily */
 
-    int fc;                     /* Framing capabilities of peer */
+    int fc; /* Framing capabilities of peer（能同步，异步处理帧吗？） */
     struct schedule_entry *hello;
     int ourfc;                  /* Our framing capabilities */
     int bc;                     /* Peer's bearer channels */
@@ -152,8 +152,10 @@ struct tunnel
     int ourbc;                  /* Our bearer channels */
     _u64 tb;                    /* Their tie breaker */
     _u64 ourtb;                 /* Our tie breaker */
-    int tid;                    /* Peer's tunnel identifier */
-    IPsecSAref_t refme;         /* IPsec SA particulars */
+
+    /* WARN: 3个 tunnel id， 一个是 tid,另外一个是 ourtid,还有一个 qtid */
+    int tid;            /* Peer's tunnel identifier */	
+    IPsecSAref_t refme; /* IPsec SA particulars */
     IPsecSAref_t refhim;
     int ourtid;                 /* Our tunnel identifier */
     int qtid;                   /* TID for disconnection */
@@ -180,6 +182,11 @@ struct tunnel
     int txspeed;		/* Transmit bps */
     int udp_fd;			/* UDP fd */
     int pppox_fd;			/* PPPOX tunnel fd */
+/* 
+ * 专门临时用的 call，在调用函数时，call 不至于为 NULL
+ * packet 中的 call_id 不为 0 时(比如 ICRQ 等消息)，则不用此 self 了
+ * 
+ */
     struct call *self;
     struct lns *lns;            /* LNS that owns us */
     struct lac *lac;            /* LAC that owns us */
