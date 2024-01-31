@@ -787,6 +787,7 @@ int control_finish (struct tunnel *t, struct call *c)
 #ifdef IP_ALLOCATION
         if (t->lns->assign_ip) {
             p->addr = get_addr (t->lns->range);
+			log_debug("0x6c01691a set.call.addr:%x\n", p->addr);
             if (!p->addr)
             {
                 set_error (p, ERROR_NORES, "No available IP address");

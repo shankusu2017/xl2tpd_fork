@@ -641,7 +641,7 @@ void network_thread ()
             }
         }
 
-		log_debug("0x0281d979 handle l2tp header\n");
+		//log_debug("0x0281d979 handle l2tp header\n");
 	    /*
 	     * some logic could be added here to verify that we only
 	     * get L2TP packets inside of IPsec, or to provide different
