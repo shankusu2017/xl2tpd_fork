@@ -379,7 +379,9 @@ void call_close (struct call *c)
 }
 
 /*
- * 发送关闭信号给对应进程
+ * ,提交未提交的 zlb,
+ * 释放 ip
+ * 发送关闭信号给 pppd 进程或强制关闭对应进程
  * 从 tunnel, lac 队列中移除
  */
 void destroy_call(struct call *c)
@@ -409,7 +411,7 @@ void destroy_call(struct call *c)
         unreserve_addr (c->addr);
 		log_debug("0x2ea9edfb unreserve_addr: %x\n", c->addr);
     }
-
+	/* 下面代码有隐藏的 bug，，具体检索           0x32e2d745 */
     if (c->lns && c->lns->localrange) {
         unreserve_addr (c->lns->localaddr);
 		log_debug("0x7df61ad0 unreserve_addr: %x, lns:%x\n", c->lns->localaddr, c->lns);
@@ -443,12 +445,12 @@ void destroy_call(struct call *c)
  #ifdef DEBUG_PPPD
       l2tp_log (LOG_DEBUG, "Terminating pppd: sending TERM signal to pid %d\n", pid);
  #endif
-      kill (pid, SIGTERM);
+      kill (pid, SIGTERM);	/* 通知 pppd 进制关闭，不关心 pppd 进程是否真关闭了 */
 #else
  #ifdef DEBUG_PPPD
       l2tp_log (LOG_DEBUG, "Terminating pppd: sending KILL signal to pid %d\n", pid);
  #endif
-      kill (pid, SIGKILL);
+      kill (pid, SIGKILL);	/* 强制关闭进程 */
 #endif
     }
     if (c->container)

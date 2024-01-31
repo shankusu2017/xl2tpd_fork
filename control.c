@@ -168,6 +168,10 @@ static int get_local_addr(struct tunnel *t, struct call *c)
 {
 #ifdef IP_ALLOCATION
     if (t->lns->localrange) {
+		/* 0x32e2d745 同一个lns 对应多个 call 时，
+		 * lns->localaddr会出现 new 覆盖 old 的情况
+		 * 释放 lns->localaddr 会出现 释放 new 而无法释放 old 的 bug
+		*/ 
         c->lns->localaddr = get_addr (t->lns->localrange);
 		log_debug("0x05790674 lns: %x, lns->localaddr: %x\n", c->lns, c->lns->localaddr);
         if (!c->lns->localaddr)
