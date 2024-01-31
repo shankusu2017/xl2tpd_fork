@@ -122,7 +122,12 @@ unsigned int get_addr(struct iprange *ipr)
                 if (!ip_used (x))
                 {
                     status = SENSE_ALLOW;
-                    ipr2 = ipr->next;
+					/* 
+					 * 第一个范围的 sense 值为 allow ,
+					 * 后面的范围的sense可能为 allow 也可能为 deny,所以这里还要考虑后面的配置 
+					 * 越靠后的配置，优先级越高
+					 */
+                    ipr2 = ipr->next;	
                     while (ipr2)
                     {
                         if ((x >= ntohl (ipr2->start))

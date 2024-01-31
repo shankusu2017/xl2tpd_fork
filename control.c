@@ -169,6 +169,7 @@ static int get_local_addr(struct tunnel *t, struct call *c)
 #ifdef IP_ALLOCATION
     if (t->lns->localrange) {
         c->lns->localaddr = get_addr (t->lns->localrange);
+		log_debug("0x05790674 lns: %x, lns->localaddr: %x\n", c->lns, c->lns->localaddr);
         if (!c->lns->localaddr)
         {
             set_error (c, ERROR_NORES, "No available local IP addresses");
