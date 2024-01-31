@@ -59,8 +59,8 @@ void l2tp_log (int level, const char *fmt, ...)
     vsnprintf (buf, sizeof (buf), fmt, args);
     va_end (args);
     
-    //if(gconfig.syslog) {
-    if (1)	// TODO DEBUG
+    //if(gconfig.syslog) {	// TODO DEBUG
+    if (1) {
 	init_log();
 	SYSLOG_CALL( syslog (level, "%s", buf) );
     } else {
