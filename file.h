@@ -85,8 +85,11 @@ struct lns
     char hostname[STRLEN];      /* Hostname to report */
     char entname[STRLEN];       /* Name of this entry */
     struct iprange *lacs;       /* Hosts permitted to connect */
+	
+	/* 本端 lns 的 ip 要么是一个固定值，要么是一个范围值，两种情况互斥 */
     struct iprange *range;      /* Range of IP's we provide */
     struct iprange *localrange; /* Range of local IP's we provide */
+	
     int assign_ip;              /* Do we actually provide IP addresses? */
 
 // 认证相关	

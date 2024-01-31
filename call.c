@@ -412,7 +412,7 @@ void destroy_call(struct call *c)
 
     if (c->lns && c->lns->localrange) {
         unreserve_addr (c->lns->localaddr);
-		log_debug("0x7df61ad0 unreserve_addr: %x\n", c->lns->localaddr);
+		log_debug("0x7df61ad0 unreserve_addr: %x, lns:%x\n", c->lns->localaddr, c->lns);
     }
 #endif
 
