@@ -17,9 +17,9 @@
 
 struct avp_hdr
 {
-    _u16 length;   /* °üº¬ avp_hdr ÔÚÄÚµÄ avp ³¤¶È */
-    _u16 vendorid; /* ¹©Ó¦ÉÌ*/
-    _u16 attr;     /* ÊôĞÔID */
+    _u16 length;   /* åŒ…å« avp_hdr åœ¨å†…çš„ avp é•¿åº¦ */
+    _u16 vendorid; /* ç¡¬ä»¶å•†*/
+    _u16 attr;     /* å±æ€§ID */
 } __attribute__((packed));
 
 struct avp
@@ -47,8 +47,8 @@ extern char *msgtypes[];
  * Macros to extract information from length field of AVP
  */
 
-/* ±ØĞë½âÎö¸Ã AVP ÊôĞÔ£¬Èç¹ûÎŞ·¨½âÎöÔò½ø³ÌÓ¦¸ÃÖÕÖ¹ */
-#define AMBIT(len) (len & 0x8000) /* Mandatory£¨Ç¿ÖÆ£© bit: If this is \
+/* å¿…é¡»è§£æè¯¥ AVP å±æ€§ï¼Œå¦‚æœæ— æ³•è§£æåˆ™è¿›ç¨‹åº”è¯¥ç»ˆæ­¢ */
+#define AMBIT(len) (len & 0x8000) /* Mandatoryï¼ˆå¼ºåˆ¶ï¼‰ bit: If this is \
                                      set on an unknown AVP,                \
                                      we MUST terminate */
 

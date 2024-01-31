@@ -204,7 +204,7 @@ void dethrottle (void *call)
 	} */
 }
 
-// xmit:发射
+// 发送控制     packet, xmit:发射
 void control_xmit (void *b)
 {
     struct buffer *buf = (struct buffer *) b;

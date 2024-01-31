@@ -405,11 +405,15 @@ void destroy_call(struct call *c)
     toss(c->ppp_buf);
 
 #ifdef IP_ALLOCATION
-    if (c->addr)
+    if (c->addr) {
         unreserve_addr (c->addr);
+		log_debug("0x2ea9edfb unreserve_addr: %x\n", c->addr);
+    }
 
-    if (c->lns && c->lns->localrange)
+    if (c->lns && c->lns->localrange) {
         unreserve_addr (c->lns->localaddr);
+		log_debug("0x7df61ad0 unreserve_addr: %x\n", c->lns->localaddr);
+    }
 #endif
 
     /*
@@ -668,7 +672,7 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
     else
     {
         /* You can't specify a call number if you haven't specified
-           a tunnel silly! */
+           a tunnel silly!（愚蠢） */
 
         if (call)
         {
