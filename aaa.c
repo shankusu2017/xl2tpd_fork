@@ -48,6 +48,7 @@ static int ip_used(unsigned int addr)
     return 0;
 }
 
+/* 生存随机数，用作后续授权 */
 void mk_challenge (unsigned char *c, int length)
 {
     get_entropy(c, length);
@@ -228,6 +229,7 @@ static int get_secret (char *us, char *them, unsigned char *secret, int size)
 
 int handle_challenge (struct tunnel *t, struct challenge *chal)
 {
+	log_debug("0x19960f17 handle_challenge.");
     char *us;
     char *them;
     if (!t->lns && !t->lac)
