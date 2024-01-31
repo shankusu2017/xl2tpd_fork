@@ -1691,6 +1691,7 @@ static inline int write_packet (struct buffer *buf, struct tunnel *t, struct cal
         }
     }
 
+	log_debug("0x5af59a9b write ppp device at sync->async\n");
     /*
      * sync->async conversion if we're doing sync frames
      * since the PPPD driver will expect async frames
