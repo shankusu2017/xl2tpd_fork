@@ -310,7 +310,7 @@ void call_close (struct call *c)
            * within us.
          */
         tmp = c->container->call_head;
-        while (tmp)
+        while (tmp)	// 随着 tunnal->tmp 的关闭，意味着要关闭tunnel 下所有的 call
         {
             tmp2 = tmp->next;
             tmp->needclose = 0;
@@ -379,7 +379,7 @@ void call_close (struct call *c)
 }
 
 /*
- * ,提交未提交的 zlb,
+ * 提交未提交的 zlb,
  * 释放 ip
  * 发送关闭信号给 pppd 进程或强制关闭对应进程
  * 从 tunnel, lac 队列中移除

@@ -64,6 +64,7 @@ struct call
     char dialing[MAXSTRLEN];    /* Original caller ID */
     char subaddy[MAXSTRLEN];    /* Sub address */
 
+	/* 大部分 needclose=-1 是在 处理报文的过程中发现了 error */
     int needclose;              /* Do we need to close this call? */
     int closing;                /* Are we actually in the process of closing? */
     /*
