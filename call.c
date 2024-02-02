@@ -212,6 +212,7 @@ int read_packet(struct call *c)
 
 void call_close (struct call *c)
 {
+	debug_call(c);
     struct buffer *buf;
     struct schedule_entry *se, *ose;
     struct call *tmp, *tmp2;
@@ -318,6 +319,7 @@ void call_close (struct call *c)
             tmp2 = tmp->next;
             tmp->needclose = 0;
             tmp->closing = -1;
+			debug_call(tmp);
             call_close (tmp);
             tmp = tmp2;
         }
@@ -379,6 +381,7 @@ void call_close (struct call *c)
      * Note that we're in the process of closing now
      */
     c->closing = -1;
+	debug_call(tmp);
 }
 
 /*
@@ -580,6 +583,7 @@ struct call *new_call(struct tunnel *parent)
     tmp->pnu = 0;
     tmp->cnu = 0;
     tmp->needclose = 0;
+	debug_call(c);
     tmp->closing = 0;
     tmp->die = 0;
     tmp->pppd = 0;
@@ -721,15 +725,22 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
     }
 }
 
-void debug_call(struct call *call)
+void debug_call(struct call *tc)
 {
+	if (NULL == tc) {
+		return;
+	}
+	if (tc->needclose == 0 && tc->closing == 0) {
+		log_debug(" close is 0\n");
+		return;
+	}
 	int size = 32;
 	int i;
 	void *array[32];
 	int stack_num = backtrace(array, size);
 	char **stacktrace = NULL;
 
-	log_debug("\n0x451ddad8 %s needclose:%d, closing:%d \n", __func__, call->needclose, call->closing);
+	log_debug("\n0x451ddad8 %s:%s needclose:%d, closing:%d \n", __file__, __func__, tc->needclose, tc->closing);
 	log_debug("\n0x451ddad8 %s begin\n", __func__);
 	stacktrace = (char**)backtrace_symbols(array, stack_num);
  

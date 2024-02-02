@@ -329,6 +329,7 @@ static void death_handler(int signal)
                         if (!sec)
                         {
                                 st->self->closing = -1;
+								debug_call(st->self);
                                 call_close (st->self);
                         }
                         st = st2;

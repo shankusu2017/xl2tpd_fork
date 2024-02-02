@@ -257,6 +257,7 @@ void control_xmit (void *b)
                      t->ourtid);
                 t->self->needclose = 0;
                 t->self->closing = -1;
+				debug_call(t->self);
             }
             else
             {
