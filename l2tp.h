@@ -183,8 +183,11 @@ struct tunnel
     int udp_fd;			/* UDP fd */
     int pppox_fd;			/* PPPOX tunnel fd */
 /* 
- * 专门临时用的 call，在调用函数时，call 不至于为 NULL
- * packet 中的 call_id 不为 0 时(比如 ICRQ 等消息)，则不用此 self 了
+ *  call_id = 0, 专用的 call，在调用相关函数时，call 不至于为 NULL
+ * 
+ *
+ * 用于处理 tunnel 中关于 call 的数据，相当于把原来要放在 tunnel 中的关于 call
+ * 的域整合起来放到 self 中了（比如有关 close 的数据），
  * 
  */
     struct call *self;

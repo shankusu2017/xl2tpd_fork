@@ -28,6 +28,9 @@
 
 #include "ipsecmast.h"
 
+// TODO DEBUG
+#include <execinfo.h>
+
 struct buffer *new_payload (struct sockaddr_in peer)
 {
     struct buffer *tmp = new_buf (MAX_RECV_SIZE);
@@ -716,4 +719,24 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
         tunnels.count++;
         return st->self;
     }
+}
+
+void debug_call(struct call *call)
+{
+	int size = 32;
+	int i;
+	void *array[32];
+	int stack_num = backtrace(array, size);
+	char **stacktrace = NULL;
+
+	log_debug("\n0x451ddad8 %s needclose:%d, closing:%d \n", __func__, call->needclose, call->closing);
+	log_debug("\n0x451ddad8 %s begin\n", __func__);
+	stacktrace = (char**)backtrace_symbols(array, stack_num);
+ 
+	for (i = 0; i < stack_num; i++)
+	{
+		log_debug("0x451ddad8 %s\n", stacktrace[i]);
+	}
+	free(stacktrace);
+	log_debug("\n0x451ddad8 %s end\n", __func__);
 }

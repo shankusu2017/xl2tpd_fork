@@ -64,7 +64,10 @@ struct call
     char dialing[MAXSTRLEN];    /* Original caller ID */
     char subaddy[MAXSTRLEN];    /* Sub address */
 
-	/* 大部分 needclose=-1 是在 处理报文的过程中发现了 error */
+	/* 大部分 needclose=-1 是在 处理报文的过程中发现了 error
+	* set closing = -1，表示正在关闭，不可逆,且基本上同时 set needclose = 0,
+	* 返回来, set needclose -1  ---> 0 的同时，基本上 set closing = -1
+	*/
     int needclose;              /* Do we need to close this call? */
     int closing;                /* Are we actually in the process of closing? */
     /*
@@ -122,3 +125,4 @@ extern struct call *new_call (struct tunnel *);
 extern void set_error (struct call *, int, const char *, ...);
 void *call_thread_init (void *);
 void call_close (struct call *);
+void debug_call(struct call *call);	// TODO DEBUG
