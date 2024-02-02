@@ -740,8 +740,7 @@ void debug_call(struct call *tc)
 	int stack_num = backtrace(array, size);
 	char **stacktrace = NULL;
 
-	log_debug("\n0x451ddad8 %s:%s needclose:%d, closing:%d \n", __file__, __func__, tc->needclose, tc->closing);
-	log_debug("\n0x451ddad8 %s begin\n", __func__);
+	log_debug("\n0x451ddad8 %s:%s needclose:%d, closing:%d \n", __FILE__, __FUNCTION__, tc->needclose, tc->closing);
 	stacktrace = (char**)backtrace_symbols(array, stack_num);
  
 	for (i = 0; i < stack_num; i++)
@@ -749,5 +748,5 @@ void debug_call(struct call *tc)
 		log_debug("0x451ddad8 %s\n", stacktrace[i]);
 	}
 	free(stacktrace);
-	log_debug("\n0x451ddad8 %s end\n", __func__);
+	log_debug("\n0x451ddad8 %s:%s end\n", __FILE__, __FUNCTION__);
 }
