@@ -749,4 +749,7 @@ void debug_call(struct call *tc)
 	}
 	free(stacktrace);
 	log_debug("\n0x451ddad8 %s:%s end\n", __FILE__, __FUNCTION__);
+	if (tc->needclose == 1 && tc->closing == 1) {
+		log_debug(" close flag is 1-1\n");
+	}
 }
