@@ -49,13 +49,13 @@ int init_config ()
     gconfig.ipsecsaref = 0; /* default off - requires patched KLIPS kernel module */
     gconfig.forceuserspace = 0;             /* default off - allow kernel decap of(解密) data packets */
     gconfig.listenaddr = htonl(INADDR_ANY); /* Default is to bind (listen) to all interfaces */
-    gconfig.debug_avp = 0;
+    gconfig.debug_avp = -1		/* TODO DEL */
     //gconfig.debug_network = 0;
     gconfig.debug_network = -1;	/* TODO DEL */
     gconfig.packet_dump = 0;
 	//gconfig.debug_tunnel = 0;
 	gconfig.debug_tunnel = -1;	/* TODO DEL */
-    gconfig.debug_state = 0;
+    gconfig.debug_state = -1	/* TODO DEL */
     gconfig.max_retries = DEFAULT_MAX_RETRIES;
     gconfig.cap_backoff = 0;
     lnslist = NULL;
