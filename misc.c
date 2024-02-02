@@ -88,6 +88,7 @@ void set_error(struct call *c, int error, const char *fmt, ...)
     c->error = error;
     c->result = RESULT_ERROR;
     c->needclose = -1;
+	debug_call(c);
     vsnprintf (c->errormsg, sizeof (c->errormsg), fmt, args);
     if (c->errormsg[strlen (c->errormsg) - 1] == '\n')
         c->errormsg[strlen (c->errormsg) - 1] = 0;

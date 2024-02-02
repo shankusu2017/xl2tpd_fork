@@ -127,6 +127,7 @@ void wrong_length (struct call *c, char *field, int expected, int found,
     c->error = ERROR_LENGTH;
     c->result = RESULT_ERROR;
     c->needclose = -1;
+	debug_call(c);
 }
 
 struct unaligned_u16 {
@@ -1718,6 +1719,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
                            "mandatory attribute %d cannot be handled",
                            avp->attr);
                 c->needclose = -1;
+				debug_call(c);
                 return -EINVAL;
             }
             else
@@ -1736,6 +1738,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
                  __FUNCTION__);
             set_error (c, ERROR_LENGTH, "Invalid AVP length");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
 		// 第一个 AVP 必须是 message_type 的 avp 
@@ -1745,6 +1748,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
                  __FUNCTION__);
             set_error (c, VENDOR_ERROR, "First AVP must be message type");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         if (ALENGTH (avp->length) < sizeof (struct avp_hdr))
@@ -1753,6 +1757,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
                  __FUNCTION__, ALENGTH (avp->length));
             set_error (c, ERROR_LENGTH, "AVP too small");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         if (AZBITS (avp->length))
@@ -1763,6 +1768,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
             {
                 set_error (c, ERROR_RESERVED, "reserved bits set in AVP");
                 c->needclose = -1;
+				debug_call(c);
                 return -EINVAL;
             }
             goto next;
@@ -1786,6 +1792,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
                 {
                     set_error (c, VENDOR_ERROR, "Invalid Hidden AVP");
                     c->needclose = -1;
+					debug_call(c);
                     return -EINVAL;
                 }
                 goto next;
@@ -1830,6 +1837,7 @@ int handle_avps (struct buffer *buf, struct tunnel *t, struct call *c)
                      __FUNCTION__, avp->attr,
                      avps[avp->attr].description);
                 c->needclose = -1;
+				debug_call(c);
                 return -EINVAL;
             }
             else

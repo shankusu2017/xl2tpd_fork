@@ -266,6 +266,7 @@ void control_xmit (void *b)
                      t->ourtid);
                 strcpy (t->self->errormsg, "Timeout");
                 t->self->needclose = -1;
+				debug_call(t->self);
             }
 	    call_close(t->self);
         }
@@ -654,7 +655,6 @@ void network_thread ()
 		 */
 	    fix_hdr (buf->start);
 	    extract (buf->start, &tunnel, &call);
-
 	    if (gconfig.debug_network)
 	    {
 		l2tp_log(LOG_DEBUG, "%s: recv packet from %s, size = %d, "
@@ -708,10 +708,12 @@ void network_thread ()
                 if (gconfig.debug_tunnel)
                 l2tp_log (LOG_DEBUG, "%s: bad packet\n", __FUNCTION__);
             }
+			debug_call(c);
             if (c->cnu)
             {
                 /* Send Zero Byte Packet */
                 control_zlb (buf, c->container, c);
+				debug_call(c);
                 c->cnu = 0;
             }
         }
@@ -769,6 +771,7 @@ void network_thread ()
                          __FUNCTION__, strerror (-result), -result);
                     strcpy (sc->errormsg, strerror (-result));
                     sc->needclose = -1;
+					debug_call(sc);
                 }
             } // for (sc..
         } // for (st..

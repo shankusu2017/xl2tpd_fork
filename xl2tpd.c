@@ -274,6 +274,7 @@ static void child_handler(int sig)
                          c->cid );
                     }
                     c->needclose = -1;
+					debug_call(c);
                     /*
                      * OK...pppd died, we can go ahead and close the pty for
                      * it
@@ -887,6 +888,7 @@ static void lac_disconnect (int tid)
                  "Disconnecting from %s, Local: %d, Remote: %d\n",
                  IPADDY (t->peer.sin_addr), t->ourtid, t->tid);
             t->self->needclose = -1;
+			debug_call(t->self);
             strcpy (t->self->errormsg, "Goodbye!");
             call_close (t->self);
             return;

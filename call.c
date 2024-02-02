@@ -583,7 +583,7 @@ struct call *new_call(struct tunnel *parent)
     tmp->pnu = 0;
     tmp->cnu = 0;
     tmp->needclose = 0;
-	debug_call(c);
+	debug_call(tmp);
     tmp->closing = 0;
     tmp->die = 0;
     tmp->pppd = 0;

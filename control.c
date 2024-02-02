@@ -398,6 +398,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__);
             set_error (c, VENDOR_ERROR, "Specify your assigned tunnel ID");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         if (!(t->lns = get_lns (t)))
@@ -408,6 +409,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__, IPADDY (t->peer.sin_addr));
             set_error (c, VENDOR_ERROR, "No Authorization");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         t->ourrws = t->lns->tun_rws;
@@ -420,6 +422,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__);
             set_error (c, VENDOR_ERROR, "Specify framing capability");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         /* FIXME: Do we need to be sure they specified a version number?
@@ -442,6 +445,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__);
             set_error (c, VENDOR_ERROR, "Specify your hostname");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
 
@@ -468,6 +472,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__, t->tid);
                 c->needclose = 0;
                 c->closing = -1;
+				debug_call(c);
                 return 0;
             }
             y = y->next;
@@ -553,6 +558,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__);
             set_error (c, VENDOR_ERROR, "Specify framing capability");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         /* FIXME: Do we need to be sure they specified a version number?
@@ -575,6 +581,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__);
             set_error (c, VENDOR_ERROR, "Specify your hostname");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         if (t->tid <= 0)
@@ -585,6 +592,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__);
             set_error (c, VENDOR_ERROR, "Specify your assigned tunnel ID");
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         if (t->chal_them.state)
@@ -596,6 +604,7 @@ int control_finish (struct tunnel *t, struct call *c)
                 l2tp_log (LOG_WARNING, "%s: No secret key for authenticating '%s'\n",
                      __FUNCTION__, t->hostname);
                 c->needclose = -1;
+				debug_call(c);
                 return -EINVAL;
             }
             if (memcmp
@@ -606,6 +615,7 @@ int control_finish (struct tunnel *t, struct call *c)
                 l2tp_log (LOG_DEBUG, "%s: Invalid authentication for host '%s'\n",
                      __FUNCTION__, t->hostname);
                 c->needclose = -1;
+				debug_call(c);
                 return -EINVAL;
             }
         }
@@ -618,6 +628,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__, t->hostname);
                 set_error (c, VENDOR_ERROR, "No secret key on our end");
                 c->needclose = -1;
+				debug_call(c);
                 return -EINVAL;
             };
         }
@@ -674,6 +685,7 @@ int control_finish (struct tunnel *t, struct call *c)
                 l2tp_log (LOG_DEBUG, "%s: Invalid authentication for host '%s'\n",
                      __FUNCTION__, t->hostname);
                 c->needclose = -1;
+				debug_call(c);
                 return -EINVAL;
             }
         }
@@ -737,6 +749,7 @@ int control_finish (struct tunnel *t, struct call *c)
              ntohs (t->peer.sin_port), t->self->errormsg, t->ourtid, t->tid);
         c->needclose = 0;
         c->closing = -1;
+		debug_call(c);
         break;
     case ICRQ:
         p = t->call_head;
@@ -772,6 +785,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__, p->cid);
                 p->needclose = 0;
                 p->closing = -1;
+				debug_call(p);
                 return 0;
             }
             z = z->next;
@@ -843,6 +857,7 @@ int control_finish (struct tunnel *t, struct call *c)
                      "%s: Peer tried to negotiate ICRP without specifying call ID\n",
                      __FUNCTION__);
             c->needclose = -1;
+			debug_call(c);
             return -EINVAL;
         }
         c->state = ICCN;
@@ -992,6 +1007,7 @@ int control_finish (struct tunnel *t, struct call *c)
             c->needclose = -1;
             return -EINVAL;
             */
+            debug_call(c);
         }
         c->state = ICCN;
         if (get_local_addr(t, c))
@@ -1173,6 +1189,7 @@ int control_finish (struct tunnel *t, struct call *c)
              IPADDY (t->peer.sin_addr), c->serno, c->errormsg);
         c->needclose = 0;
         c->closing = -1;
+		debug_call(c);
         break;
     case Hello:
         break;
@@ -1262,6 +1279,7 @@ static inline int check_control(const struct buffer *buf, struct tunnel *t,
                destroy it.  */
             c->needclose = 0;
             c->closing = -1;
+			debug_call(c);
         }
         return -EINVAL;
     }
@@ -1750,6 +1768,7 @@ static inline int write_packet (struct buffer *buf, struct tunnel *t, struct cal
              */
             c->needclose = -1;
             c->fd = -1;
+			debug_call(c);
             return -EIO;
         }
         else {
@@ -1832,6 +1851,7 @@ static int handle_control(struct buffer *buf, struct tunnel *t,
                      __FUNCTION__);
     #endif
                 c->needclose = 0;
+				debug_call(c);
                 /* Trigger final closing of call */
             }
         }
