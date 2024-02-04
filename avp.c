@@ -1395,6 +1395,7 @@ int assigned_call_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
+/* 未启用 packet processing delay */
 int packet_delay_avp (struct tunnel *t, struct call *c, void *data,
                       int datalen)
 {
