@@ -139,8 +139,10 @@ struct unaligned_u16 {
 
 /*
  * t, c, data, and datalen may be assumed to be defined for all AVP's
+ *
+ * 校验下 msg_type 和 call 的状态一致性（A 类型的消息是否能被B 状态机处理）
+ * 构建一个 call (针对：ICRQ)
  */
-
 int message_type_avp (struct tunnel *t, struct call *c, void *data,
                       int datalen)
 {
@@ -333,6 +335,7 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
         }
     }
 #endif
+	/* 可以考虑把下面这一段 new_call 的业务集成到 control_finish */
     if (c->msgtype == ICRQ)
     {
         struct call *tmp;
@@ -444,7 +447,7 @@ int seq_reqd_avp(struct tunnel *t, struct call *c, void *data, int datalen)
         }
         switch (c->msgtype)
         {
-        case ICCN:	/* 其它的 msgtype 不准用携带此消息 */
+        case ICCN:	/* 其它的 msgtype 不能携带此消息 */
             break;
         default:
             if (DEBUG)
@@ -464,7 +467,7 @@ int seq_reqd_avp(struct tunnel *t, struct call *c, void *data, int datalen)
     return 0;
 }
 
-/* 处理结果码 */
+/* 处理对面发过来的处理结果码（针对 CDN, StopCCN 这两种消息） */
 int result_code_avp(struct tunnel *t, struct call *c, void *data,
                     int datalen)
 {
@@ -625,6 +628,7 @@ int protocol_version_avp(struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
+/* 对端的 frame 的同步（异步兼容能力） */
 int framing_caps_avp (struct tunnel *t, struct call *c, void *data,
                       int datalen)
 {
@@ -673,7 +677,7 @@ int framing_caps_avp (struct tunnel *t, struct call *c, void *data,
     return 0;
 }
 
-/* 自己支持模拟设备、数字设备？*/
+/* 对端支持模拟设备、数字设备？*/
 int bearer_caps_avp(struct tunnel *t, struct call *c, void *data,
                     int datalen)
 {
@@ -1260,9 +1264,10 @@ int chalresp_avp (struct tunnel *t, struct call *c, void *data, int datalen)
 }
 
 
-/* tunnel id :非常重要
- * ID 是对端向我通告本次通信中：它的 ID 是多少，后续通信时，发往对端的消息中，
- * 需要携带此ID，方便对端找到对应的 tunnel 的数据，下面的call id 同理
+/* tunnel id ： KEY_MEMBER
+ * ID 是对端向我通告本次通信中：它的 ID 是多少，在后续通信中，
+ * 发往对端的消息里需要携带此ID，方便对端找到对应的 tunnel 的数据，
+ * 下面的call id 同理
  */
 int assigned_tunnel_avp(struct tunnel *t, struct call *c, void *data,
                         int datalen)
