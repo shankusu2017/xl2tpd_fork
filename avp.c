@@ -133,7 +133,9 @@ void wrong_length (struct call *c, char *field, int expected, int found,
 struct unaligned_u16 {
 	_u16	s;
 } __attribute__((packed));
-/* packed 属性，避免发生 int32 这种意外的对齐 bug */
+/* 通知编译器按照 packed 属性处理边界对齐，
+ * 避免发生 int32 这种意外的对齐 bug 
+ */
 
 /*
  * t, c, data, and datalen may be assumed to be defined for all AVP's

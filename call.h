@@ -51,8 +51,13 @@ struct call
                                    working with right now? */
 
     int ourcid;                 /* Our call number */
-    int cid;                    /* Their call number */
-    int qcid;                   /* Quitting CID */
+    int cid;                    /* Their(peer) call number */
+
+/* 有可能用 tunnel->self 这个特殊的 call ( cid ==0 ) 来处理 CDN 消息，
+ * 这种情况下，就不能用 cid 来表示某个 call了，改为用特定的 qcid 来标记
+ */
+    int qcid;                   /* Quitting CID (CDN 消息中携带的 cid ) */
+	
     int bearer;                 /* Bearer type of call */
     unsigned int serno;         /* Call serial number */
     unsigned int addr;          /* Address reserved for this call */
@@ -66,7 +71,7 @@ struct call
 
 	/* 大部分 needclose=-1 是在 处理报文的过程中发现了 error
 	* set closing = -1，表示正在关闭，不可逆,且基本上同时 set needclose = 0,
-	* 返回来, set needclose -1  ---> 0 的同时，基本上 set closing = -1
+	* 返过来, set needclose -1  ---> 0 的同时，基本上 set closing = -1
 	*/
     int needclose;              /* Do we need to close this call? */
     int closing;                /* Are we actually in the process of closing? */

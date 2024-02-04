@@ -773,6 +773,8 @@ int control_finish (struct tunnel *t, struct call *c)
             call_close (p);
             return -EINVAL;
         }
+		/* 更好的思路是在 ICRQ 的 AVP 处理流程中，忽略相同的 ICRQ
+		*/
         z = p->next;
         while (z)
         {
@@ -1175,7 +1177,11 @@ int control_finish (struct tunnel *t, struct call *c)
                      __FUNCTION__, c->qcid, c->ourcid);
             return -EINVAL;
         }
-        c->qcid = -1;
+		/* qcid 的标记作用已完成使命(可能是特定的的 call 也可能是 tunnel->self )
+		 * 对tunnel->self而言，必须将其 reset
+		 * 对特定的 call 而言，马上进入 close 流程，也可以对 qcid 做 reset 了
+		 */
+        c->qcid = -1;	
         if (c->result < 0)
         {
             if (DEBUG)

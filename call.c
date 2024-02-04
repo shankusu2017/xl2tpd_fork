@@ -667,7 +667,9 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
                     return NULL;
                 }
                 else
-                {	/* call-id 为 0 时返回 st->self 70271f3f */
+                {	/* call-id 为 0 时，没有指代特定的 call，
+                     * 返回 st->self 这个专用的call  即可 70271f3f 
+                     */
                     return st->self;
                 }
             }
@@ -731,7 +733,7 @@ void debug_call(struct call *tc)
 		return;
 	}
 	if (tc->needclose == 0 && tc->closing == 0) {
-		log_debug(" close is 0\n");
+		log_debug("close is 0\n");
 		return;
 	}
 	int size = 32;
