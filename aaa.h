@@ -23,7 +23,7 @@
 #define VECTOR_SIZE 16
 
 #define STATE_NONE 		 0
-#define STATE_CHALLENGED 1		/* 已发送授权认证相关的信息给对方，等待下一步验证？ */
+#define STATE_CHALLENGED 1		/* 已发送授权认证需要的信息给对方 */
 #define STATE_COMPLETE	 2		/* 此宏未使用 */
 
 struct addr_ent

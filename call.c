@@ -668,7 +668,7 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
                 }
                 else
                 {	/* call-id 为 0 时，没有指代特定的 call，
-                     * 返回 st->self 这个专用的call  即可 70271f3f 
+                     * 返回 st->self 这个专用的call 70271f3f
                      */
                     return st->self;
                 }

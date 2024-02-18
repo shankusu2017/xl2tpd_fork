@@ -22,7 +22,7 @@
 
 struct avp avps[] = {
 	/*
-	 * 最重要的 avp_type，标识该 control-message 的 type 
+	 * 重要的 avp，标识该 control-message 的 type 
 	 */
     {0, 1, &message_type_avp, "Message Type"},
     {1, 1, &result_code_avp, "Result Code"},
@@ -185,6 +185,8 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
         /*
          * Look out our state for each message and make sure everything
          * make sense...
+         *
+         * tunnel 级别的 avp, 只能是 tunnel 本身的 call 来处理
          */
         if ((c != t->self) && (c->msgtype < Hello))
         {
@@ -247,7 +249,7 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
                          __FUNCTION__);
                 return -EINVAL;
             }
-			/* 这个判断条件，不好理解,参考这个注释 70271f3f */
+			/* 参考注释 70271f3f */
             if (c != t->self)
             {
                 if (DEBUG)
@@ -395,7 +397,7 @@ int rand_vector_avp(struct tunnel *t, struct call *c, void *data,
     if (gconfig.debug_avp)
         l2tp_log (LOG_DEBUG, "%s: Random Vector of %d octets\n", __FUNCTION__,
              size);
-    t->chal_us.vector = (unsigned char *) &raw[3].s;
+    t->chal_us.vector = (unsigned char *) &raw[3].s;	/* 这里不进行 mem 拷贝 吗？*/
     t->chal_us.vector_len = size;
     return 0;
 }
@@ -463,7 +465,7 @@ int seq_reqd_avp(struct tunnel *t, struct call *c, void *data, int datalen)
         if (DEBUG)
             l2tp_log (LOG_DEBUG, "%s: peer requires sequencing.\n", __FUNCTION__);
     }
-    c->seq_reqd = -1;
+    c->seq_reqd = -1;	/* 在 C 语言中用 1表示比 -1 更好理解 */
     return 0;
 }
 

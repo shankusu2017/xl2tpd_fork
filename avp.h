@@ -47,7 +47,7 @@ extern char *msgtypes[];
  * Macros to extract information from length field of AVP
  */
 
-/* 必须解析该 AVP 属性，如果无法解析则进程应该终止 */
+/* 该 AVP 属性必须得到正确解析，如果无法解析则进程应该终止 */
 #define AMBIT(len) (len & 0x8000) /* Mandatory（强制） bit: If this is \
                                      set on an unknown AVP,                \
                                      we MUST terminate */

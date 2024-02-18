@@ -195,7 +195,7 @@ struct tunnel
     struct lac *lac;            /* LAC that owns us */
     struct in_pktinfo my_addr;  /* Address of my endpoint */
     char hostname[MAXSTRLEN];   /* Remote hostname */
-    char vendor[MAXSTRLEN];     /* Vendor of remote product */
+    char vendor[MAXSTRLEN];     /* Vendor(设备商) of remote product */
     struct challenge chal_us;   /* Their Challenge to us */
     struct challenge chal_them; /* Our challenge to them */
     char secret[MAXSTRLEN];     /* Secret to use */
