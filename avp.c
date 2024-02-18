@@ -352,6 +352,7 @@ int message_type_avp (struct tunnel *t, struct call *c, void *data,
             l2tp_log (LOG_WARNING, "%s: unable to create new call\n", __FUNCTION__);
             return -EINVAL;
         }
+		/* 放到队列头，后续对此有依赖 0x452f1213 */
         tmp->next = t->call_head;
         t->call_head = tmp;
         t->count++;
@@ -991,7 +992,7 @@ int dialing_number_avp(struct tunnel *t, struct call *c, void *data,
 
 int dialed_number_avp (struct tunnel *t, struct call *c, void *data,
                        int datalen)
-{
+{+
     /*
      * What is the peer's name?
      */
@@ -1369,7 +1370,7 @@ int assigned_call_avp (struct tunnel *t, struct call *c, void *data,
     else if (c->msgtype == ICRQ)
     {	/* 
          * NOTE: 代码默认这边新构建了一个 call 且放到了队列头，
-         * 若不是这样，则需要修改代码, 找到对应的 call
+         * 若不是这样，则需要修改代码, 找到对应的 call 0x452f1213
          *
          * 这里记录下对方的 call id
     	 */
