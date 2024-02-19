@@ -51,7 +51,7 @@ int add_message_type_avp (struct buffer *buf, _u16 type)
 	struct half_words *ptr = (struct half_words *) (buf->start + buf->len + sizeof(struct avp_hdr));
     add_header(buf, 0x8, 0); /* 0x8 = 0x6 + 0x2，下同*/
     ptr->s0 = htons(type);
-    buf->len += 0x8;
+    buf->len += 0x8;	// 更新 len，方便添加下一个 avp, 下同
     return 0;
 }
 

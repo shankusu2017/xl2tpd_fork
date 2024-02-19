@@ -18,6 +18,7 @@
 
 #define CALL_CACHE_SIZE 256
 
+/* 某些域,仅仅是记录了值，实际中没被用到 */
 struct call
 {
 /*	int rbit;		Set the "R" bit on the next packet? */

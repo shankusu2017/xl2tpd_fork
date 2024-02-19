@@ -97,6 +97,7 @@ int init_network(void)
             gconfig.ipsecsaref=0;
         }
         arg=1;
+		/* 获取接收报文的相关信息 */
         if(setsockopt(server_socket, IPPROTO_IP, IP_PKTINFO, (char*)&arg, sizeof(arg)) != 0)
         {
             l2tp_log(LOG_CRIT, "setsockopt IP_PKTINFO: %s\n", strerror(errno));

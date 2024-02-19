@@ -104,7 +104,7 @@ void add_fcs (struct buffer *buf)
     buf->len += 2;
 }
 
-/* 增加控制头到当前buf的最前面 */
+/* 增加控制头到当前 buf 的最前面 */
 void add_control_hdr(struct tunnel *t, struct call *c, struct buffer *buf)
 {
     struct control_hdr *h;
@@ -121,6 +121,7 @@ void add_control_hdr(struct tunnel *t, struct call *c, struct buffer *buf)
     t->control_seq_num++; /* 别忘了这一点 */
 }
 
+/* 发送本次心跳包的同时，将下一次发送的 time.node 也插入到超时队列中了 */
 void hello (void *tun)
 {
     struct buffer *buf;
@@ -148,7 +149,10 @@ void hello (void *tun)
     t->hello = schedule (tv, hello, (void *) t);
 }
 
-/* 暂时还不太明白这种 Packet 的意义 */
+/* 发送已收到的 packet 的序号给 peer
+ * 用途： 1. 在关闭 call 阶段，用于告知对方，本段已收到关闭的信号
+ *        2. 平时用于通告对端，本端已收到了 xxx 的包，可以释放对应的 buf
+*/
 void control_zlb(struct buffer *buf, struct tunnel *t, struct call *c)
 {
     recycle_outgoing (buf, t->peer);
@@ -1849,14 +1853,14 @@ static int handle_control(struct buffer *buf, struct tunnel *t,
         t->control_rec_seq_num--;
         c->cnu = 0;
         if (c->needclose && c->closing)
-        {
+        {	/* 对端已收到 关闭 call 的 packet */
             if (c->container->cLr >= c->closeSs)
             {
     #ifdef DEBUG_ZLB
                 l2tp_log (LOG_DEBUG, "%s: ZLB for closing message found\n",
                      __FUNCTION__);
     #endif
-                c->needclose = 0;
+                c->needclose = 0;	/* TODO 这个赋值作用是啥？ */
 				debug_call(c);
                 /* Trigger final closing of call */
             }

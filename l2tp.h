@@ -145,7 +145,7 @@ struct tunnel
     struct tunnel *next;        /* Allows us to be linked easily */
 
     int fc; /* Framing capabilities of peer（能同步，异步处理帧吗？） */
-    struct schedule_entry *hello;
+    struct schedule_entry *hello;	/* 定时发送隧道心跳包 */
     int ourfc;                  /* Our framing capabilities */
     int bc;                     /* Peer's bearer channels */
     int hbit;                   /* Allow hidden AVP's? */
@@ -183,8 +183,7 @@ struct tunnel
     int udp_fd;			/* UDP fd */
     int pppox_fd;			/* PPPOX tunnel fd */
 /* 
- *  call_id = 0, 专用的 call，在调用相关函数时，call 不至于为 NULL
- * 
+ * 专用 call,表示 tunnel 中的有关 call 的逻辑，所以域名也叫 self
  *
  * 用于处理 tunnel 中关于 call 的数据，相当于把原来要放在 tunnel 中的关于 call
  * 的域整合起来放到 self 中了（比如有关 close 的数据），

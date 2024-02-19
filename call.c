@@ -49,7 +49,7 @@ inline void recycle_payload (struct buffer *buf, struct sockaddr_in peer)
     buf->peer = peer;
 }
 
-/* 在buf的最前面加一个 l2tp 头(从pppd转发到对端的l2tpd-client) */
+/* 在 buf 的最前面加一个 l2tp 头(从 pppd 转发到对端的 l2tpd-client) */
 void add_payload_hdr(struct tunnel *t, struct call *c, struct buffer *buf)
 {
     struct payload_hdr *p;
@@ -417,7 +417,7 @@ void destroy_call(struct call *c)
         unreserve_addr (c->addr);
 		log_debug("0x2ea9edfb unreserve_addr: %x\n", c->addr);
     }
-	/* 下面代码有隐藏的 bug，，具体检索           0x32e2d745 */
+	/* 下面代码有隐藏的 bug，具体检索 0x32e2d745 */
     if (c->lns && c->lns->localrange) {
         unreserve_addr (c->lns->localaddr);
 		log_debug("0x7df61ad0 unreserve_addr: %x, lns:%x\n", c->lns->localaddr, c->lns);
@@ -733,7 +733,7 @@ void debug_call(struct call *tc)
 		return;
 	}
 	if (tc->needclose == 0 && tc->closing == 0) {
-		log_debug("close is 0\n");
+		log_debug("needclose and close is 0\n");
 		return;
 	}
 	int size = 32;
