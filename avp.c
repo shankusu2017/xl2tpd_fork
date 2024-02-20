@@ -1309,7 +1309,7 @@ int assigned_tunnel_avp(struct tunnel *t, struct call *c, void *data,
 #endif
     if (c->msgtype == StopCCN)
     {
-        t->qtid = ntohs (raw[3].s);
+        t->qtid = ntohs (raw[3].s);	/* 0x3174badb */
     	log_debug("0x1ba25d34 qtid: %d\n", t->qtid);
     }
     else
@@ -1366,7 +1366,17 @@ int assigned_call_avp (struct tunnel *t, struct call *c, void *data,
 #endif
     if (c->msgtype == CDN)
     {
-        c->qcid = ntohs (raw[3].s);
+    /* 
+     * 表示发起方本端需要关闭的 call-id，  qtid 也一样 0x3174badb
+     *
+     * A----CDN----> B
+     * t.id = 3      t.id = 300
+     * c.id = 2      c.id = 200
+     *
+     * CDN 消息中 qcid 不是对端B的 200 而是消息发送方的 2
+     * 
+     */
+        c->qcid = ntohs (raw[3].s);	/* 先记录值，后续再校验该值 */
 		log_debug("0x1ba25d34 qcid: %d\n", c->qcid);
     }
     else if (c->msgtype == ICRQ)

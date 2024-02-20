@@ -730,6 +730,7 @@ int control_finish (struct tunnel *t, struct call *c)
             tmptid = t->ourtid;
         else
             tmptid = t->tid;
+		/* 校验 qtid */
         if ((t->qtid != tmptid) && (tmptid > 0))
         {
             if (DEBUG)
@@ -1176,6 +1177,7 @@ int control_finish (struct tunnel *t, struct call *c)
         else
             tmpcid = p->cid;
 
+		/* 核对 qcid 的合法性 */
         if ((c->qcid != tmpcid) && tmpcid > 0)
         {
             if (DEBUG)
