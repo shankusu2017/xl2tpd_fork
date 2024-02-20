@@ -1310,6 +1310,7 @@ int assigned_tunnel_avp(struct tunnel *t, struct call *c, void *data,
     if (c->msgtype == StopCCN)
     {
         t->qtid = ntohs (raw[3].s);
+    	log_debug("0x1ba25d34 qtid: %d\n", t->qtid);
     }
     else
     {
@@ -1366,6 +1367,7 @@ int assigned_call_avp (struct tunnel *t, struct call *c, void *data,
     if (c->msgtype == CDN)
     {
         c->qcid = ntohs (raw[3].s);
+		log_debug("0x1ba25d34 qcid: %d\n", c->qcid);
     }
     else if (c->msgtype == ICRQ)
     {	/* 

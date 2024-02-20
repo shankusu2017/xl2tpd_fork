@@ -753,6 +753,7 @@ int control_finish (struct tunnel *t, struct call *c)
              "%s: Connection closed to %s, port %d (%s), Local: %d, Remote: %d\n",
              __FUNCTION__, IPADDY (t->peer.sin_addr),
              ntohs (t->peer.sin_port), t->self->errormsg, t->ourtid, t->tid);
+		/* 这里将 tunnel 的关闭信息记录到了 self 上 */
         c->needclose = 0;
         c->closing = -1;
 		debug_call(c);
@@ -1157,7 +1158,7 @@ int control_finish (struct tunnel *t, struct call *c)
             while (p && (p->cid != c->qcid))
                 p = p->next;
             if (!p)
-            {
+            {	/* 这里要预防对方发送过来的 call_id 是非法的 */
                 if (DEBUG)
                     l2tp_log (LOG_DEBUG,
                          "%s: Unable to determine call to be disconnected.\n",
