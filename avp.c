@@ -992,7 +992,7 @@ int dialing_number_avp(struct tunnel *t, struct call *c, void *data,
 
 int dialed_number_avp (struct tunnel *t, struct call *c, void *data,
                        int datalen)
-{+
+{
     /*
      * What is the peer's name?
      */
