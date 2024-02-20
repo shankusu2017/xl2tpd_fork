@@ -121,7 +121,9 @@ void add_control_hdr(struct tunnel *t, struct call *c, struct buffer *buf)
     t->control_seq_num++; /* 别忘了这一点 */
 }
 
-/* 发送本次心跳包的同时，将下一次发送的 time.node 也插入到超时队列中了 */
+/* 发送本次心跳包
+ * 将下一次发送的 time.node 也插入到超时队列中
+ */
 void hello (void *tun)
 {
     struct buffer *buf;
