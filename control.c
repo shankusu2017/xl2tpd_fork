@@ -1660,6 +1660,7 @@ void send_zlb (void *data)
 static inline int write_packet (struct buffer *buf, struct tunnel *t, struct call *c,
                          int convert)
 {
+	l2tp_log(LOG_INFO, "write_packet \n");
     /*
      * Write a packet, doing sync->async conversion if
      * necessary
