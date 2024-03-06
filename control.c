@@ -1687,8 +1687,8 @@ static inline int write_packet (struct buffer *buf, struct tunnel *t, struct cal
     c->rx_bytes += buf->len;
 
     {
-    	_u16 dprotocol = *((_u16 *)(buf->start + 2))
-    	l2tp_log (LOG_DEBUG, "------> %x \n", dprotocol);
+    	_u16 dprotocol = *((_u16 *)(buf->start + 2));
+    	l2tp_log(LOG_DEBUG, "------> %x \n", dprotocol);
     }
 
     /*
