@@ -1663,7 +1663,7 @@ void send_zlb (void *data)
 static inline int write_packet (struct buffer *buf, struct tunnel *t, struct call *c,
                          int convert)
 {
-	l2tp_log(LOG_INFO, "write_packet \n");
+	dlog("write_packet 2 ppp");
     /*
      * Write a packet, doing sync->async conversion if
      * necessary
@@ -1897,7 +1897,7 @@ static int handle_control(struct buffer *buf, struct tunnel *t,
 inline int handle_packet (struct buffer *buf, struct tunnel *t,
                           struct call *c)
 {
-	dlog("recv a packet");
+	dlog("recv a packet from ppp");
     int res;
 /* tv code is commented out below
 #ifdef DEBUG_ZLB
