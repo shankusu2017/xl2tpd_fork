@@ -1908,12 +1908,16 @@ inline int handle_packet (struct buffer *buf, struct tunnel *t,
     if (CTBIT (*((_u16 *) buf->start)))
         return handle_control(buf, t, c);
 
+	dlog("");
     if (!check_payload (buf, t, c))
     {
+    	dlog("");
         if (!expand_payload (buf, t, c))
         {
+        	dlog("");
             if (buf->len > sizeof (struct payload_hdr))
             {
+            	dlog("");
 /*				if (c->throttle) {
 					if (c->pSs > c->pLr + c->rws) {
 #ifdef DEBUG_FLOW
@@ -1970,6 +1974,7 @@ inline int handle_packet (struct buffer *buf, struct tunnel *t,
             }
             else if (buf->len == sizeof (struct payload_hdr))
             {
+            	dlog("");
 #ifdef DEBUG_ZLB
                 l2tp_log (LOG_DEBUG, "%s: payload ZLB received\n",
                      __FUNCTION__);
@@ -1994,12 +1999,14 @@ inline int handle_packet (struct buffer *buf, struct tunnel *t,
             }
             else
             {
+            	dlog("");
                 l2tp_log (LOG_DEBUG, "%s: payload too small!\n", __FUNCTION__);
                 return -EINVAL;
             }
         }
         else
         {
+        	dlog("");
             if (gconfig.debug_tunnel)
                 l2tp_log (LOG_DEBUG, "%s: unable to expand payload!\n",
                      __FUNCTION__);
