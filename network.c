@@ -664,6 +664,7 @@ void network_thread ()
 			 recvsize, tunnel, call, refme, refhim);
 	    }
 
+		dlog("recv a packet");
 	    if (gconfig.packet_dump)
 	    {
 		do_packet_dump (buf);
