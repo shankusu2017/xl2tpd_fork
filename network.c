@@ -126,8 +126,10 @@ int init_network(void)
         else
         {	/* 通过日子发现，下面的分支被执行 */
             close(kernel_fd);
-            l2tp_log (LOG_INFO, "Using l2tp kernel support.\n");
+            dlog("Using l2tp kernel support.\n");
             kernel_support = -1;
+			// TODODEL
+			kernel_support = 0;
         }
     }
 #else
