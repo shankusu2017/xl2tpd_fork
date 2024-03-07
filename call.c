@@ -107,7 +107,7 @@ int read_packet(struct call *c)
     {
         if (c->rbuf_pos >= c->rbuf_max)
         {
-        	dlog("read packet from call");
+        	dlog("read packet from ppp");
             c->rbuf_max = read(c->fd, c->rbuf, sizeof (c->rbuf));
             res = c->rbuf_max;
             c->rbuf_pos = 0;
