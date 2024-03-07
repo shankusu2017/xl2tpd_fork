@@ -81,7 +81,6 @@ void log_debug(const char *fmt, ...)
 
 void dblog(const char *format, ...)
 {
-
 	char buf[2048];
 	va_list args;
 

@@ -494,7 +494,6 @@ void network_thread ()
 
     for (;;)
     {
-    	dlog("for loop start...");
         int ret;
         process_signal();
         max = build_fdset (&readfds);

@@ -1888,6 +1888,9 @@ static int handle_control(struct buffer *buf, struct tunnel *t,
     return control_finish (t, c);
 }
 
+/* 发给 ppp 的数据包（非控制包），没有经过l2tp，
+ * 应该是在 kernel 层就直接发往 net-card 了 
+ */
 inline int handle_packet (struct buffer *buf, struct tunnel *t,
                           struct call *c)
 {
