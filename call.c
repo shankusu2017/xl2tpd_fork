@@ -730,7 +730,7 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
 void debug_call(struct call *tc)
 {
 #ifndef DEBUG_CALL
-	return
+	return;
 #endif
 
 	if (NULL == tc) {
