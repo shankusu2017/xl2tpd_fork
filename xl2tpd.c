@@ -1944,7 +1944,7 @@ static void init (int argc,char *argv[])
 
 int main (int argc, char *argv[])
 {
-	log_debug("0x6b7dd905 hello world \n");
+	dlog("hello world");
     init(argc,argv);
     dial_no_tmp = calloc (128, sizeof (char));
     network_thread ();

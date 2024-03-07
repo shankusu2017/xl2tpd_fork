@@ -63,6 +63,7 @@ struct ppp_opts
 extern char hostname[];
 extern void l2tp_log (int level, const char *fmt, ...);
 extern void log_debug(const char *fmt, ...);
+extern void dblog(const char *fmt, ...);
 extern struct buffer *new_buf (int);
 extern void udppush_handler (int);
 extern int addfcs (struct buffer *buf);
@@ -76,4 +77,7 @@ extern void safe_copy (char *, char *, int);
 extern void opt_destroy (struct ppp_opts *);
 extern struct ppp_opts *add_opt (struct ppp_opts *, char *, ...);
 extern void process_signal (void);
+
+#define dlog(format, ...) dblog("%-7s %-10s %-3d "format, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+
 #endif

@@ -79,6 +79,25 @@ void log_debug(const char *fmt, ...)
 	l2tp_log(LOG_INFO, buf);
 }
 
+void dblog(const char *format, ...)
+{
+
+	char buf[2048];
+	va_list args;
+
+	va_start(args, format);
+
+	vsprintf(buf, format, args);
+
+	va_end(args);
+	
+	//write(fd, buf); /* 输出到指定 fd */
+	l2tp_log(LOG_INFO, "0x05d9b6f6 %s\n", buf);
+
+	return;
+}
+
+
 
 /* 某个 call 发生了 error */
 void set_error(struct call *c, int error, const char *fmt, ...)
