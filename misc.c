@@ -92,7 +92,7 @@ void dblog(const char *format, ...)
 	va_end(args);
 	
 	//write(fd, buf); /* 输出到指定 fd */
-	l2tp_log(LOG_INFO, "0x05d9b6f6 %s\n", buf);
+	l2tp_log(LOG_WARNING, "0x05d9b6f6 %s\n", buf);
 
 	return;
 }
