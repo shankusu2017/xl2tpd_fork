@@ -395,11 +395,13 @@ int start_pppd (struct call *c, struct ppp_opts *opts)
 #ifdef USE_KERNEL
     struct sockaddr_pppol2tp sax;
     int flags;
+	dlog("MACRO USE_KERNEL ing");
 #endif
     int pos = 1;
     int fd2 = -1;
 #ifdef DEBUG_PPPD
     int x;
+	dlog("MACRO DEBUG_PPPD ing");
 #endif
     struct termios ptyconf;
     struct call *sc;
@@ -421,6 +423,7 @@ int start_pppd (struct call *c, struct ppp_opts *opts)
 #ifdef USE_KERNEL
     if (kernel_support)
     {
+       dlog("MACRO USE_KERNEL ing, kernel_support ing...");
        fd2 = socket(AF_PPPOX, SOCK_DGRAM, PX_PROTO_OL2TP);
        if (fd2 < 0) {
            l2tp_log (LOG_WARNING, "%s: Unable to allocate PPPoL2TP socket.\n",

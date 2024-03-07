@@ -137,6 +137,12 @@ int getPtyMaster_ptm(char *ttybuf, int ttybuflen)
 
 int getPtyMaster(char *ttybuf, int ttybuflen)
 {
+	{	/* DEBUG */
+		char buf[2048] = {0};
+		memcpy(buf, ttybuf, ttybuflen);
+		dlog(" ttybuf: %s", buf);
+	}
+
     int fd;
 #ifndef OPENBSD
     fd = getPtyMaster_ptmx(ttybuf, ttybuflen);

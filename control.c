@@ -986,6 +986,7 @@ int control_finish (struct tunnel *t, struct call *c)
             po = add_opt (po, IPADDY (t->peer.sin_addr));
         }
         start_pppd (c, po);
+		dlog("c->fd: %d", c->fd);
         opt_destroy (po);
         if (c->lac)
             c->lac->rtries = 0;
@@ -1069,6 +1070,7 @@ int control_finish (struct tunnel *t, struct call *c)
         }
 
         start_pppd (c, po);
+		dlog("c->fd: %d", c->fd);
         opt_destroy (po);
         l2tp_log (LOG_NOTICE,
              "Call established with %s, PID: %d, Local: %d, Remote: %d, Serial: %d\n",
@@ -1132,6 +1134,7 @@ int control_finish (struct tunnel *t, struct call *c)
             po = add_opt (po, IPADDY (t->peer.sin_addr));
         }
         start_pppd (c, po);
+		dlog("c->fd: %d", c->fd);
 
         /*  jz: just show some information */
         l2tp_log (LOG_INFO,
