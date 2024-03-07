@@ -196,6 +196,7 @@ static int get_local_addr(struct tunnel *t, struct call *c)
 
 int control_finish (struct tunnel *t, struct call *c)
 {
+	dlog("");
     /*
      * After all AVP's have been handled, do anything else
      * which needs to be done, like prepare response
@@ -220,6 +221,7 @@ int control_finish (struct tunnel *t, struct call *c)
 
     if (c->msgtype < 0)
     {
+    	dlog("");
         l2tp_log (LOG_DEBUG, "%s: Whoa...  non-ZLB with no message type!\n",
              __FUNCTION__);
         return -EINVAL;
@@ -228,7 +230,8 @@ int control_finish (struct tunnel *t, struct call *c)
         l2tp_log (LOG_DEBUG,
              "%s: message type is %s(%d).  Tunnel is %d, call is %d.\n",
              __FUNCTION__, msgtypes[c->msgtype], c->msgtype, t->tid, c->cid);
-    switch (c->msgtype)
+	dlog("c->msgtype: %d", c->msgtype);
+	switch (c->msgtype)
     {
     case 0:
         /*
@@ -1851,9 +1854,11 @@ int handle_special (struct buffer *buf, struct call *c, _u16 call)
 static int handle_control(struct buffer *buf, struct tunnel *t,
                           struct call *c)
 {
-    /* We have a control packet */
+	dlog("");
+	/* We have a control packet */
     if (check_control (buf, t, c))
     {
+    	dlog("");
         l2tp_log (LOG_DEBUG, "%s: bad control packet!\n", __FUNCTION__);
         return -EINVAL;
     }
@@ -1861,6 +1866,7 @@ static int handle_control(struct buffer *buf, struct tunnel *t,
     c->msgtype = -1;
     if (buf->len == sizeof (struct control_hdr))
     {
+    	dlog("");
     #ifdef DEBUG_ZLB
         l2tp_log (LOG_DEBUG, "%s: control ZLB received\n", __FUNCTION__);
     #endif
@@ -1884,6 +1890,7 @@ static int handle_control(struct buffer *buf, struct tunnel *t,
 
     if (handle_avps (buf, t, c))
     {
+    	dlog("");
         if (gconfig.debug_tunnel)
             l2tp_log (LOG_DEBUG, "%s: bad AVP handling!\n", __FUNCTION__);
         return -EINVAL;
@@ -1905,8 +1912,10 @@ inline int handle_packet (struct buffer *buf, struct tunnel *t,
 #endif
     */
     /* 控制包，进入控制处理逻辑 */
-    if (CTBIT (*((_u16 *) buf->start)))
+    if (CTBIT (*((_u16 *) buf->start))) {
+		dlog("");
         return handle_control(buf, t, c);
+    }
 
 	dlog("");
     if (!check_payload (buf, t, c))
