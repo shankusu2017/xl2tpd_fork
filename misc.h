@@ -79,5 +79,6 @@ extern struct ppp_opts *add_opt (struct ppp_opts *, char *, ...);
 extern void process_signal (void);
 
 #define dlog(format, ...) dblog("%-7s %-10s %-3d "format, __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+//#define DEBUG_CALL
 
 #endif

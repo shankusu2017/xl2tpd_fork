@@ -729,11 +729,15 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
 
 void debug_call(struct call *tc)
 {
+#ifndef DEBUG_CALL
+	return
+#endif
+
 	if (NULL == tc) {
 		return;
 	}
 	if (tc->needclose == 0 && tc->closing == 0) {
-		log_debug("needclose and close is 0\n");
+		dlog("needclose and close is 0\n");
 		return;
 	}
 	int size = 32;
@@ -742,16 +746,16 @@ void debug_call(struct call *tc)
 	int stack_num = backtrace(array, size);
 	char **stacktrace = NULL;
 
-	log_debug("\n0x451ddad8 %s:%s needclose:%d, closing:%d \n", __FILE__, __FUNCTION__, tc->needclose, tc->closing);
+	dlog("\n%s:%s needclose:%d, closing:%d \n", __FILE__, __FUNCTION__, tc->needclose, tc->closing);
 	stacktrace = (char**)backtrace_symbols(array, stack_num);
  
 	for (i = 0; i < stack_num; i++)
 	{
-		log_debug("0x451ddad8 %s\n", stacktrace[i]);
+		dlog("%s\n", stacktrace[i]);
 	}
 	free(stacktrace);
-	log_debug("\n0x451ddad8 %s:%s end\n", __FILE__, __FUNCTION__);
+	log_debug("\n%s:%s end\n", __FILE__, __FUNCTION__);
 	if (tc->needclose == 1 && tc->closing == 1) {
-		log_debug(" close flag is 1-1\n");
+		dlog(" close flag is 1-1\n");
 	}
 }

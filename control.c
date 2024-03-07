@@ -1891,6 +1891,7 @@ static int handle_control(struct buffer *buf, struct tunnel *t,
 inline int handle_packet (struct buffer *buf, struct tunnel *t,
                           struct call *c)
 {
+	dlog("recv a packet");
     int res;
 /* tv code is commented out below
 #ifdef DEBUG_ZLB
