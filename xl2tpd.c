@@ -424,7 +424,8 @@ int start_pppd (struct call *c, struct ppp_opts *opts)
 
 #ifdef USE_KERNEL
     if (kernel_support)
-    {	/* 下面代码被执行 */
+    {	
+    /* 0x4eb8ee48 下面代码被执行,  pppd的数据直接从kernel中转，l2tp感知不到了 */
        dlog("MACRO USE_KERNEL ing, kernel_support ing...");
        fd2 = socket(AF_PPPOX, SOCK_DGRAM, PX_PROTO_OL2TP);
        if (fd2 < 0) {

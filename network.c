@@ -34,7 +34,11 @@ char hostname[256];
 struct sockaddr_in server, from;        /* Server and transmitter structs */
 int server_socket;              /* Server socket */
 #ifdef USE_KERNEL
-int kernel_support;             /* Kernel Support there or not?，分析日志得知内核是支持的 */
+/* 分析日志得知内核(5.15.0)是支持的
+ * 通过设置 0x4eb8ee48 ，可以将原本peer发往ppp的数据和从ppp发回peer的数据从原本l2tp中转改为直接走kernel(l2tp完全感知不到)
+*/
+
+int kernel_support;             /* Kernel Support there or not*/
 #endif
 
 // 根据配置文件，在指定的 IP 地址上创建 socket，设置参数后，开启监听
@@ -128,8 +132,6 @@ int init_network(void)
             close(kernel_fd);
             dlog("Using l2tp kernel support.\n");
             kernel_support = -1;
-			// TODODEL
-			kernel_support = 0;
         }
     }
 #else
