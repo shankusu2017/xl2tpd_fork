@@ -41,7 +41,9 @@ int server_socket;              /* Server socket */
 int kernel_support;             /* Kernel Support there or not*/
 #endif
 
-// 根据配置文件，在指定的 IP 地址上创建 socket，设置参数后，开启监听
+/* 根据配置，在指定的 IP 地址上创建 socket，设置参数后，开启监听
+ * 测试 KERNEL 是否支持 l2tp<->ppp 若支持则相关数据包直接走内核
+ */
 int init_network(void)
 {
 	log_debug ("init_network...\n");
@@ -64,7 +66,7 @@ int init_network(void)
     setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &flags, sizeof(flags));
 #ifdef SO_NO_CHECK
     setsockopt(server_socket, SOL_SOCKET, SO_NO_CHECK, &flags, sizeof(flags));
-	log_debug ("setsockopt SO_NO_CHECK\n");
+	dlog ("setsockopt SO_NO_CHECK\n");
 #endif
 
     if (bind (server_socket, (struct sockaddr *) &server, sizeof (server)))
@@ -119,7 +121,7 @@ int init_network(void)
         kernel_support = 0;
     }
     else
-    {
+    {	/* 检查下内核是否支持 l2tp-ppp 协议，如果支持则l2tp<->ppp的数据包直接走内核 */
         int kernel_fd = socket(AF_PPPOX, SOCK_DGRAM, PX_PROTO_OL2TP);
         if (kernel_fd < 0)
         {
