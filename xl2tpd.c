@@ -1571,7 +1571,7 @@ static int control_handle_lac_status(){
     return 1;
 }
 
-/* 外界进程和l2tp进程沟通的一种方式 */
+/* 外界进程和l2tp进程沟通(by pipe)的一种方式 */
 void do_control()
 {
     char buf[CONTROL_PIPE_MESSAGE_SIZE];

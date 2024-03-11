@@ -792,6 +792,8 @@ int connect_pppol2tp(struct tunnel *t) {
     if (!kernel_support)
         return 0;
 
+	dlog("...");
+
     int ufd = -1, fd2 = -1;
     int flags;
     struct sockaddr_pppol2tp sax;
