@@ -423,7 +423,9 @@ int build_fdset (fd_set *readfds)
 		{
 			if (call->needclose ^ call->closing)
 			{
+				dlog("...");
 				call_close (call);
+				dlog("...");
 				call = tun->call_head;
 				if (!call)
 					break;
@@ -502,6 +504,7 @@ void network_thread ()
     {
         int ret;
         process_signal();
+		/* 同时处理 close 逻辑 */
         max = build_fdset (&readfds);
         ptv = process_schedule(&tv);
         // ptv 放到 这里，恰到好处
@@ -788,6 +791,7 @@ void network_thread ()
 }
 
 #ifdef USE_KERNEL
+/* 打印确定本函数被调用 */
 int connect_pppol2tp(struct tunnel *t) {
     if (!kernel_support)
         return 0;

@@ -213,6 +213,7 @@ int read_packet(struct call *c)
 
 void call_close (struct call *c)
 {
+	dlog("...");
 	debug_call(c);
     struct buffer *buf;
     struct schedule_entry *se, *ose;
@@ -393,6 +394,7 @@ void call_close (struct call *c)
  */
 void destroy_call(struct call *c)
 {
+	dlog("...");
     /*
      * Here, we unconditionally destroy a call.
      */
@@ -416,12 +418,12 @@ void destroy_call(struct call *c)
 #ifdef IP_ALLOCATION
     if (c->addr) {
         unreserve_addr (c->addr);
-		log_debug("0x2ea9edfb unreserve_addr: %x\n", c->addr);
+		dlog("unreserve_addr: %x\n", c->addr);
     }
 	/* 下面代码有隐藏的 bug，具体检索 0x32e2d745 */
     if (c->lns && c->lns->localrange) {
         unreserve_addr (c->lns->localaddr);
-		log_debug("0x7df61ad0 unreserve_addr: %x, lns:%x\n", c->lns->localaddr, c->lns);
+		dlog("unreserve_addr: %x, lns:%x\n", c->lns->localaddr, c->lns);
     }
 #endif
 
@@ -434,6 +436,7 @@ void destroy_call(struct call *c)
     pid = c->pppd;
     if (pid > 0)
     {
+    	dlog("pid: %d", pid);
       /* Set c->pppd to zero to prevent recursion with child_handler */
       c->pppd = 0;
       /*
@@ -730,33 +733,33 @@ struct call *get_call(int tunnel, int call, struct in_addr addr, int port,
 
 void debug_call(struct call *tc)
 {
-#ifndef DEBUG_CALL
-	return;
-#endif
+//#ifndef DEBUG_CALL
+//	return;
+//#endif
 
-	if (NULL == tc) {
-		return;
-	}
-	if (tc->needclose == 0 && tc->closing == 0) {
-		dlog("needclose and close is 0\n");
-		return;
-	}
-	int size = 32;
-	int i;
-	void *array[32];
-	int stack_num = backtrace(array, size);
-	char **stacktrace = NULL;
+//	if (NULL == tc) {
+//		return;
+//	}
+//	if (tc->needclose == 0 && tc->closing == 0) {
+//		dlog("needclose and close is 0\n");
+//		return;
+//	}
+//	int size = 32;
+//	int i;
+//	void *array[32];
+//	int stack_num = backtrace(array, size);
+//	char **stacktrace = NULL;
 
-	dlog("\n%s:%s needclose:%d, closing:%d \n", __FILE__, __FUNCTION__, tc->needclose, tc->closing);
-	stacktrace = (char**)backtrace_symbols(array, stack_num);
- 
-	for (i = 0; i < stack_num; i++)
-	{
-		dlog("%s\n", stacktrace[i]);
-	}
-	free(stacktrace);
-	log_debug("\n%s:%s end\n", __FILE__, __FUNCTION__);
-	if (tc->needclose == 1 && tc->closing == 1) {
-		dlog(" close flag is 1-1\n");
-	}
+	dlog("needclose: %d, closing: %d \n", tc->needclose, tc->closing);
+//	stacktrace = (char**)backtrace_symbols(array, stack_num);
+// 
+//	for (i = 0; i < stack_num; i++)
+//	{
+//		dlog("%s\n", stacktrace[i]);
+//	}
+//	free(stacktrace);
+//	log_debug("\n%s:%s end\n", __FILE__, __FUNCTION__);
+//	if (tc->needclose == 1 && tc->closing == 1) {
+//		dlog(" close flag is 1-1\n");
+//	}
 }
