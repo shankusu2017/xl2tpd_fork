@@ -130,7 +130,7 @@ int init_network(void)
             kernel_support = 0;
         }
         else
-        {	/* 通过日子发现，下面的分支被执行 */
+        {	/* 通过日子发现，下面的分支被执行  相关注释 0x4eb8ee48 */
             close(kernel_fd);
             dlog("Using l2tp kernel support.\n");
             kernel_support = -1;
