@@ -1904,7 +1904,7 @@ static int handle_control(struct buffer *buf, struct tunnel *t,
 inline int handle_packet (struct buffer *buf, struct tunnel *t,
                           struct call *c)
 {
-	dlog("recv a packet 2 ppp");
+	dlog("recv a packet 2 ppp...");
     int res;
 /* tv code is commented out below
 #ifdef DEBUG_ZLB
@@ -1913,11 +1913,11 @@ inline int handle_packet (struct buffer *buf, struct tunnel *t,
     */
     /* 控制包，进入控制处理逻辑 */
     if (CTBIT (*((_u16 *) buf->start))) {
-		dlog("");
+		dlog("is control packet...");
         return handle_control(buf, t, c);
     }
 
-	dlog("");
+	dlog("is data packet...");
     if (!check_payload (buf, t, c))
     {
     	dlog("");

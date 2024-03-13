@@ -133,7 +133,7 @@ int init_network(void)
         {	/* 通过日子发现，下面的分支被执行  相关注释 0x4eb8ee48 */
             close(kernel_fd);
             dlog("Using l2tp kernel support.\n");
-            kernel_support = -1;
+            //kernel_support = -1; //TODODEL comment
         }
     }
 #else
@@ -747,6 +747,7 @@ void network_thread ()
 
                 while ((result = read_packet (sc)) > 0)
                 {
+                	dlog("recv a packet from pppd...");
                     add_payload_hdr (sc->container, sc, sc->ppp_buf);
                     if (gconfig.packet_dump)
                     {
